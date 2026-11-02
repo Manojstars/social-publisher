@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Krishna Muse Publisher — Drive to All Social Media</title>
+<meta name="description" content="Pick videos from Google Drive and publish to YouTube, Instagram, Facebook, X, TikTok and LinkedIn from one GitHub Pages app. Talk to Muse with: krishna! muse">
+<style>
+:root{--bg:#0b1220;--panel:#121a2e;--panel2:#182238;--line:#26314d;--text:#eef2ff;--muted:#9aa8c7;--gold:#f5c542;--gold2:#ffdf7e;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--radius:16px}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+a{color:var(--gold)}button,input,select,textarea{font:inherit}
+.top{position:sticky;top:0;z-index:20;background:rgba(11,18,32,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:12px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#b45309);display:grid;place-items:center;font-size:22px}
+.title{font-weight:800;font-size:18px}.sub{color:var(--muted);font-size:12px}
+.pill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);background:var(--panel)}
+.pill.ok{color:#bbf7d0;border-color:#14532d}.pill.warn{color:#fde68a;border-color:#713f12}
+.btn{background:var(--gold);color:#111827;border:0;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--gold2)}.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.btn.danger{background:#7f1d1d;color:#fff}.btn.small{padding:7px 10px;font-size:13px}.btn:disabled{opacity:.5;cursor:not-allowed}
+.wrap{max-width:1220px;margin:0 auto;padding:18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{padding:9px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}.tab.active{background:var(--gold);color:#111827;font-weight:800;border-color:var(--gold)}
+.view{display:none}.view.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}.span3{grid-column:span 3}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
+@media(max-width:900px){.span3,.span4,.span6,.span8{grid-column:span 12}}
+.stat{font-size:30px;font-weight:900}.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+input,select,textarea{width:100%;background:#0e1628;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:10px 11px;margin:6px 0 12px}
+textarea{min-height:92px}label{font-size:13px;color:var(--muted);font-weight:600}
+.check{display:flex;gap:9px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);padding:11px;border-radius:12px;margin:7px 0}.check input{width:auto;margin:3px 0 0}
+.video{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);margin:10px 0;align-items:flex-start}
+.thumb{width:86px;height:120px;object-fit:cover;border-radius:10px;background:#000;flex:0 0 auto}
+.badge{font-size:11px;padding:3px 7px;border-radius:999px;background:#1e293b;color:#cbd5e1;border:1px solid var(--line)}.badge.gold{background:#451a03;color:#fde68a}
+.log{background:#050914;border:1px solid var(--line);border-radius:12px;padding:12px;height:240px;overflow:auto;font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre-wrap}
+.chat{background:#050914;border:1px solid var(--line);border-radius:14px;padding:12px;height:300px;overflow:auto}.msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:92%}.msg.user{background:#1d2a4a;margin-left:auto}.msg.muse{background:#17251a;border:1px solid #14532d}
+.kbd{font-family:ui-monospace,monospace;background:#1e293b;padding:2px 6px;border-radius:6px;border:1px solid var(--line)}
+.notice{border:1px solid #713f12;background:#2a1a03;color:#fde68a;padding:12px;border-radius:12px}.success{border-color:#14532d;background:#052e16;color:#bbf7d0}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}
+progress{width:100%;height:10px}video.preview{width:100%;max-height:420px;background:#000;border-radius:12px}
+.small{font-size:12px;color:var(--muted)} .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.grow{flex:1}
+</style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="logo">🪈</div>
+  <div class="grow"><div class="title">Krishna Muse Publisher</div><div class="sub">Google Drive → YouTube • Instagram • Facebook • X • TikTok • LinkedIn &nbsp;|&nbsp; Command: <span class="kbd">krishna! muse …</span></div></div>
+  <span id="liveBadge" class="pill warn">Local / not GitHub Pages yet</span>
+  <span id="googleBadge" class="pill">Google: not connected</span>
+  <button class="btn small" onclick="googleSignIn()">Connect Google</button>
+  <button class="btn small secondary" onclick="showView('command')">🎙 Talk to Muse</button>
+</header>
+
+<div class="wrap">
+  <div class="notice" id="safetyNotice"><b>Your control, always:</b> This app never auto-posts on load. Nothing uploads until you select a video, tick the platforms, and press Publish — or give a <span class="kbd">krishna! muse publish…</span> command and confirm it. Keys are stored only in your browser (localStorage), never in this file or on GitHub.</div>
+
+  <nav class="tabs">
+    <button class="tab active" data-view="dashboard" onclick="showView('dashboard')">Dashboard</button>
+    <button class="tab" data-view="drive" onclick="showView('drive')">1. Drive Videos</button>
+    <button class="tab" data-view="compose" onclick="showView('compose')">2. Compose &amp; Publish</button>
+    <button class="tab" data-view="command" onclick="showView('command')">✦ Muse Command</button>
+    <button class="tab" data-view="queue" onclick="showView('queue')">Queue &amp; History</button>
+    <button class="tab" data-view="settings" onclick="showView('settings')">Settings &amp; Deploy</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section id="view-dashboard" class="view active">
+    <div class="grid">
+      <div class="card span3"><div class="label">Drive videos found</div><div class="stat" id="statVideos">0</div><div class="small">From your Drive folder</div></div>
+      <div class="card span3"><div class="label">In publish queue</div><div class="stat" id="statQueue">0</div><div class="small">Waiting / processing</div></div>
+      <div class="card span3"><div class="label">Published (this device)</div><div class="stat" id="statPublished">0</div><div class="small">Logged in History</div></div>
+      <div class="card span3"><div class="label">Channel</div><div style="font-weight:800;margin-top:8px">Resilience Resonance</div><div class="small">@ResilienceResonance<br>starkojunction@gmail.com</div></div>
+      <div class="card span8"><h3 style="margin-top:0">Quick start — 3 steps</h3>
+        <ol>
+          <li><b>Settings &amp; Deploy:</b> paste your Google OAuth Client ID (free, 5 min — steps in SETUP.md), save. Your Drive folder is already pre-filled.</li>
+          <li><b>Drive Videos:</b> Connect Google → Load videos → Preview → “Use this video”.</li>
+          <li><b>Compose &amp; Publish:</b> title/caption/tags are auto-suggested, tick platforms, Publish. Or say: <span class="kbd">krishna! muse publish latest video to all</span></li>
+        </ol>
+        <div class="row"><button class="btn" onclick="showView('drive')">Load my Drive videos</button><button class="btn secondary" onclick="loadDemo()">Try demo mode (no keys)</button><button class="btn secondary" onclick="showView('settings')">Open Settings</button></div>
+      </div>
+      <div class="card span4"><h3 style="margin-top:0">Platform readiness</h3><div id="readiness"></div></div>
+      <div class="card span12"><h3 style="margin-top:0">Activity log</h3><div id="log" class="log"></div><div class="row" style="margin-top:10px"><button class="btn small secondary" onclick="clearLog()">Clear log</button><button class="btn small secondary" onclick="exportCSV()">Export history CSV (for your YouTube tracker sheet)</button></div></div>
+    </div>
+  </section>
+
+  <!-- DRIVE -->
+  <section id="view-drive" class="view">
+    <div class="grid">
+      <div class="card span4">
+        <h3 style="margin-top:0">Google Drive source</h3>
+        <label>Drive folder ID or link</label><input id="folderInput" placeholder="Folder ID">
+        <div class="small">Pre-filled with your shared folder: “Muse - AI - Automation”. You can paste any folder link — the ID is extracted automatically.</div>
+        <div class="row" style="margin-top:12px"><button class="btn" onclick="loadDriveVideos()">Load videos</button><button class="btn secondary" onclick="loadDemo()">Demo videos</button></div>
+        <label style="margin-top:14px;display:block">Search</label><input id="driveSearch" placeholder="Search title…" oninput="renderVideos()">
+        <div class="small">Supported: mp4, mov, webm, m4v. Videos are downloaded in your browser only when publishing to YouTube; for Instagram the Drive public link is used.</div>
+      </div>
+      <div class="card span8"><h3 style="margin-top:0">Videos</h3><div id="videoList"><p class="small">No videos loaded yet. Connect Google and press “Load videos”, or try Demo mode.</p></div></div>
+      <div class="card span12"><h3 style="margin-top:0">Preview</h3><video id="preview" class="preview" controls playsinline></video><div id="previewMeta" class="small" style="margin-top:8px">Select a video to preview (Drive preview streams when signed in; demo items have no file).</div></div>
+    </div>
+  </section>
+
+  <!-- COMPOSE -->
+  <section id="view-compose" class="view">
+    <div class="grid">
+      <div class="card span6">
+        <h3 style="margin-top:0">Compose</h3>
+        <div id="selectedBox" class="notice">No video selected yet — go to Drive Videos and choose one.</div>
+        <label>Title (YouTube / Facebook)</label><input id="fTitle" placeholder="e.g. Marcus Aurelius — Get Out of Bed">
+        <label>Caption / Description</label><textarea id="fCaption" placeholder="Hook line + thought + application…"></textarea>
+        <label>Hashtags / Tags (comma separated)</label><input id="fTags" placeholder="stoicism, marcusaurelius, shorts">
+        <div class="grid">
+          <div class="span6"><label>Privacy (YouTube)</label><select id="fPrivacy"><option value="public">Public</option><option value="unlisted">Unlisted</option><option value="private">Private</option></select></div>
+          <div class="span6"><label>Made for kids?</label><select id="fKids"><option value="false">No</option><option value="true">Yes</option></select></div>
+        </div>
+        <label>Schedule (optional, for Muse Bridge / queue reminder)</label><input id="fSchedule" type="datetime-local">
+        <div class="row"><button class="btn secondary" onclick="suggestCopy()">✨ Suggest title / caption / tags</button><button class="btn secondary" onclick="addToQueue()">Add to queue</button></div>
+      </div>
+      <div class="card span6">
+        <h3 style="margin-top:0">Publish to</h3>
+        <div id="platformChecks"></div>
+        <div class="small" style="margin:10px 0">Direct from this static app: <b>YouTube</b> (full browser upload) and <b>Facebook / Instagram</b> (Meta Graph API, needs Meta settings). <b>X, TikTok, LinkedIn</b> go through your <b>Muse Bridge webhook</b> (Make / n8n / Zapier / Supabase Function) because those APIs need a secret backend — a static GitHub Pages site must never hold secret keys. If no webhook is set, those jobs are prepared as a Muse Job you can paste to Krishna in Muse chat.</div>
+        <progress id="progress" value="0" max="100" style="display:none"></progress>
+        <div class="row"><button class="btn" id="publishBtn" onclick="publishSelected()">🚀 Publish now</button><button class="btn secondary" onclick="prepareMuseJob()">Prepare Muse Job</button></div>
+        <div id="publishResult" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMAND -->
+  <section id="view-command" class="view">
+    <div class="grid">
+      <div class="card span8">
+        <h3 style="margin-top:0">✦ Talk to Muse — Command Center</h3>
+        <p class="small">Type or speak a command starting with <span class="kbd">krishna! muse</span>. Examples:<br>
+        <span class="kbd">krishna! muse publish latest video to all</span> •
+        <span class="kbd">krishna! muse upload this to youtube and instagram</span> •
+        <span class="kbd">krishna! muse refresh drive</span> •
+        <span class="kbd">krishna! muse add latest to queue</span> •
+        <span class="kbd">krishna! muse export history</span></p>
+        <div id="chat" class="chat"></div>
+        <div class="row" style="margin-top:10px"><input id="cmdInput" class="grow" placeholder="krishna! muse publish latest video to youtube and instagram" onkeydown="if(event.key==='Enter')runCommand()"><button class="btn" onclick="runCommand()">Send</button><button class="btn secondary" id="micBtn" onclick="toggleVoice()">🎙 Voice</button></div>
+        <div class="small" id="voiceStatus">Voice uses your browser mic (Chrome works best). Wake phrase inside the app is “krishna muse”.</div>
+      </div>
+      <div class="card span4">
+        <h3 style="margin-top:0">Muse Bridge</h3>
+        <p class="small">Two ways this app talks to Muse (Krishna):</p>
+        <ol class="small">
+          <li><b>Copy Job:</b> any publish action can generate a structured Muse Job. Paste it in your Muse chat / WhatsApp and Krishna picks it up.</li>
+          <li><b>Webhook:</b> set a Muse Bridge URL in Settings (Make/n8n webhook). Jobs are POSTed there instantly — that webhook can notify Muse, upload to X/TikTok/LinkedIn, and log to your sheet.</li>
+        </ol>
+        <button class="btn secondary" onclick="prepareMuseJob()">Generate Muse Job for selected video</button>
+        <div id="jobBox" style="margin-top:10px"></div>
+        <h4>Deploy trigger</h4>
+        <p class="small">In Muse chat, your deploy phrase is saved as: <span class="kbd">krishna! muse deploy</span> — when you send that to Krishna, the latest version of this app is packaged for GitHub Pages. Inside this app, type the same phrase to open Deploy help.</p>
+        <button class="btn secondary" onclick="showView('settings')">Deploy help</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUEUE -->
+  <section id="view-queue" class="view">
+    <div class="grid"><div class="card span12"><h3 style="margin-top:0">Publish queue</h3><div id="queueList"></div><div class="row" style="margin-top:10px"><button class="btn" onclick="processQueue()">Process queue (with confirm)</button><button class="btn secondary" onclick="exportCSV()">Export CSV</button><button class="btn danger" onclick="clearQueue()">Clear queue</button></div></div>
+    <div class="card span12"><h3 style="margin-top:0">History</h3><div id="historyList"></div></div></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" class="view">
+    <div class="grid">
+      <div class="card span6"><h3 style="margin-top:0">Settings (stored only in your browser)</h3>
+        <label>Google OAuth Client ID (Web application)</label><input id="sGoogleClient" placeholder="xxxx.apps.googleusercontent.com">
+        <label>Default Drive Folder ID</label><input id="sFolder" placeholder="Folder ID">
+        <label>Meta: Facebook Page ID</label><input id="sFbPage" placeholder="Page ID">
+        <label>Meta: Instagram Business Account ID</label><input id="sIgId" placeholder="IG user ID">
+        <label>Meta: Page Access Token (paste, never commit to GitHub)</label><input id="sMetaToken" type="password" placeholder="EAA…">
+        <label>Muse Bridge Webhook URL (Make / n8n / Zapier — for X, TikTok, LinkedIn + Muse notify)</label><input id="sWebhook" placeholder="https://hook…/…">
+        <label>Your name / channel label</label><input id="sChannel" placeholder="Resilience Resonance">
+        <div class="row"><button class="btn" onclick="saveSettings()">Save settings</button><button class="btn secondary" onclick="exportSettings()">Backup settings JSON</button><button class="btn danger" onclick="wipeAll()">Wipe local data</button></div>
+        <p class="small">Never paste a Google client <i>secret</i>, Meta app secret, or any service_role key here or in GitHub. This app uses only public client IDs + user tokens in the browser.</p>
+      </div>
+      <div class="card span6"><h3 style="margin-top:0">Deploy on GitHub Pages — in 4 steps</h3>
+        <ol>
+          <li>Create a new GitHub repo, e.g. <span class="kbd">social-publisher</span> (username: manojstars).</li>
+          <li>Upload <span class="kbd">index.html</span> + <span class="kbd">README.md</span> from the zip Krishna gives you → Commit.</li>
+          <li>Repo → Settings → Pages → Source: <b>Deploy from a branch</b> → Branch: <b>main / (root)</b> → Save.</li>
+          <li>Your app goes live at <span class="kbd">https://manojstars.github.io/social-publisher/</span> — then add that exact URL as an Authorized JavaScript origin in your Google OAuth client (SETUP.md).</li>
+        </ol>
+        <div class="notice success">Say <span class="kbd">krishna! muse deploy</span> to Krishna in Muse chat whenever you want a fresh zip of the latest version packaged for upload.</div>
+        <h4>Free API setup checklist</h4><div id="checklist"></div>
+      </div>
+    </div>
+  </section>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v1.0 • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+</div>
+
+<script>
+const LS='manu_social_publisher_v1';
+const DEFAULT_FOLDER='1rkK6gsGlz3c-1TcyY3O3ynrf8TnFRDJa';
+const PLATFORMS=[
+ {id:'youtube',name:'YouTube Shorts',icon:'▶️',mode:'direct'},
+ {id:'instagram',name:'Instagram Reels',icon:'📸',mode:'meta'},
+ {id:'facebook',name:'Facebook Reels',icon:'👍',mode:'meta'},
+ {id:'x',name:'X (Twitter)',icon:'𝕏',mode:'bridge'},
+ {id:'tiktok',name:'TikTok',icon:'🎵',mode:'bridge'},
+ {id:'linkedin',name:'LinkedIn',icon:'💼',mode:'bridge'}
+];
+let S=load()||{settings:{googleClient:'',folder:DEFAULT_FOLDER,fbPage:'',igId:'',metaToken:'',webhook:'',channel:'Resilience Resonance'},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
+let googleToken='',tokenClient=null,recog=null,listening=false;
+function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
+function save(){localStorage.setItem(LS,JSON.stringify(S))}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function log(m){const el=$('log');const t=new Date().toLocaleTimeString();el.textContent+=(el.textContent?'\n':'')+'['+t+'] '+m;el.scrollTop=el.scrollHeight;console.log(m)}
+function clearLog(){$('log').textContent=''}
+function showView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('view-'+v).classList.add('active');document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));renderAll()}
+function folderIdFrom(v){if(!v)return DEFAULT_FOLDER;const m=String(v).match(/[-\w]{25,}/);return m?m[0]:v.trim()}
+function selectedVideo(){return S.videos.find(v=>v.id===S.selectedId)||null}
+function init(){
+ $('folderInput').value=S.settings.folder||DEFAULT_FOLDER;
+ $('sGoogleClient').value=S.settings.googleClient||'';$('sFolder').value=S.settings.folder||DEFAULT_FOLDER;$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sMetaToken').value=S.settings.metaToken||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'Resilience Resonance';
+ if(location.hostname.endsWith('github.io')){$('liveBadge').textContent='● Live on GitHub Pages: '+location.hostname;$('liveBadge').className='pill ok'}
+ renderPlatformChecks();renderAll();
+ chatMsg('muse','Namaste Manu 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
+ log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));
+}
+function renderAll(){renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist()}
+function renderStats(){$('statVideos').textContent=S.videos.length;$('statQueue').textContent=S.queue.filter(q=>q.status!=='done').length;$('statPublished').textContent=S.history.length}
+function renderReadiness(){
+ const rows=[
+  ['Google / Drive + YouTube',!!S.settings.googleClient,'Add Google Client ID in Settings'],
+  ['Meta (FB + Instagram)',!!(S.settings.fbPage&&S.settings.metaToken),'Add Page ID + token in Settings'],
+  ['Muse Bridge (X/TikTok/LinkedIn)',!!S.settings.webhook,'Add webhook URL in Settings, or use Copy Job'],
+  ['Demo mode',true,'Works with no keys for a test run']];
+ $('readiness').innerHTML=rows.map(r=>'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:7px 0"><span>'+esc(r[0])+'</span><span class="badge '+(r[1]?'gold':'')+'">'+(r[1]?'Ready':'Not set')+'</span></div>'+(r[1]?'':'<div class="small">'+esc(r[2])+'</div>')).join('');
+}
+function renderChecklist(){
+ const items=[['Google Cloud project + YouTube Data API v3 + Drive API enabled',!!S.settings.googleClient],['OAuth origin added for your github.io URL',false],['Meta app + Page token (Pages/Instagram permissions)',!!S.settings.metaToken],['Muse Bridge webhook created in Make/n8n (optional)',!!S.settings.webhook],['Repo Pages source set to main / root',location.hostname.endsWith('github.io')]];
+ $('checklist').innerHTML=items.map(i=>'<div class="check"><input type="checkbox" '+(i[1]?'checked':'')+' disabled><span>'+esc(i[0])+'</span></div>').join('');
+}
+function renderPlatformChecks(){
+ $('platformChecks').innerHTML=PLATFORMS.map(p=>'<label class="check"><input type="checkbox" data-plat="'+p.id+'" '+(S.platforms[p.id]?'checked':'')+' onchange="S.platforms[this.dataset.plat]=this.checked;save()"><span><b>'+p.icon+' '+esc(p.name)+'</b><br><span class="small">'+(p.mode==='direct'?'Direct upload from browser':p.mode==='meta'?'Meta Graph API':'Via Muse Bridge webhook / Muse Job')+'</span></span></label>').join('');
+}
+function saveSettings(){S.settings={googleClient:$('sGoogleClient').value.trim(),folder:folderIdFrom($('sFolder').value),fbPage:$('sFbPage').value.trim(),igId:$('sIgId').value.trim(),metaToken:$('sMetaToken').value.trim(),webhook:$('sWebhook').value.trim(),channel:$('sChannel').value.trim()||'Resilience Resonance'};$('folderInput').value=S.settings.folder;save();renderAll();alert('Settings saved in this browser only.');log('Settings saved.')}
+function exportSettings(){download('publisher-settings-backup.json',JSON.stringify({settings:Object.assign({},S.settings,{metaToken:'(removed for safety)'})},null,2),'application/json')}
+function wipeAll(){if(confirm('Wipe all local app data on this device?')){localStorage.removeItem(LS);location.reload()}}
+function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+
+/* ---------- DEMO + DRIVE ---------- */
+function loadDemo(){
+ S.videos=[
+  {id:'demo1',name:'01-Marcus-Aurelius-Get-Out-of-Bed.mp4',title:'Marcus Aurelius — Get Out of Bed',size:'—',demo:true},
+  {id:'demo2',name:'02-Seneca-Suffer-in-Your-Head.mp4',title:'Seneca — Suffer in Your Head',size:'—',demo:true},
+  {id:'demo3',name:'03-Epictetus-Control.mp4',title:'Epictetus — Control What You Can',size:'—',demo:true},
+  {id:'demo4',name:'04-Anger-Controls-You.mp4',title:'The Man Who Angers You, Controls You',size:'—',demo:true},
+  {id:'demo5',name:'Krishna-Raas-Flute-Vrindavan.mp4',title:'Krishna Raas — Flute in Vrindavan',size:'13.7 MB',demo:true}];
+ S.selectedId='demo1';save();renderAll();log('Demo mode: 5 sample videos loaded (your real Shorts 1–4 + Krishna Raas). Connect Google to load the real Drive files.');showView('drive');
+}
+function googleSignIn(){
+ const cid=S.settings.googleClient||$('sGoogleClient').value.trim();
+ if(!cid){alert('First add your Google OAuth Client ID in Settings & Deploy (free — see SETUP.md, step 2). Then Connect Google works.');showView('settings');return}
+ if(!window.google||!google.accounts){alert('Google sign-in library is still loading — wait 3 seconds and try again.');return}
+ tokenClient=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly',callback:r=>{if(r.error){log('Google sign-in error: '+r.error);alert('Google sign-in failed: '+r.error);return}googleToken=r.access_token;$('googleBadge').textContent='Google: connected';$('googleBadge').className='pill ok';log('Google connected.');loadDriveVideos();}});
+ tokenClient.requestAccessToken({prompt:'consent'});
+}
+async function loadDriveVideos(){
+ if(!googleToken){googleSignIn();return}
+ const folder=folderIdFrom($('folderInput').value||S.settings.folder);S.settings.folder=folder;save();
+ const q=encodeURIComponent("'"+folder+"' in parents and trashed=false and (mimeType contains 'video/' or name contains '.mp4' or name contains '.mov')");
+ try{log('Loading Drive folder '+folder+' …');
+  const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name,mimeType,size,thumbnailLink,webViewLink,createdTime)&orderBy=createdTime desc&pageSize=100',{headers:{Authorization:'Bearer '+googleToken}});
+  const data=await res.json();if(!res.ok)throw new Error((data.error&&data.error.message)||res.status);
+  S.videos=(data.files||[]).map(f=>({id:f.id,name:f.name,title:f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '),size:f.size?Math.round(f.size/1048576*10)/10+' MB':'—',thumb:f.thumbnailLink,link:f.webViewLink}));
+  if(S.videos.length)S.selectedId=S.videos[0].id;save();renderAll();log('Drive: '+S.videos.length+' video(s) found.');
+ }catch(e){log('Drive load failed: '+e.message);alert('Drive load failed: '+e.message+'\nCheck folder sharing + that Drive API is enabled.')}
+}
+function renderVideos(){
+ const q=($('driveSearch')?$('driveSearch').value.toLowerCase():'');const list=S.videos.filter(v=>!q||v.name.toLowerCase().includes(q));
+ $('videoList').innerHTML=list.length?list.map(v=>'<div class="video">'+(v.thumb?'<img class="thumb" src="'+esc(v.thumb)+'" alt="">':'<div class="thumb" style="display:grid;place-items:center;font-size:28px">🎬</div>')+'<div class="grow"><b>'+esc(v.title||v.name)+'</b><div class="small">'+esc(v.name)+' • '+esc(v.size||'')+(v.demo?' • DEMO':'')+'</div><div class="row" style="margin-top:8px"><button class="btn small" onclick="selectVideo(\''+v.id+'\')">Use this video</button><button class="btn small secondary" onclick="previewVideo(\''+v.id+'\')">Preview</button>'+(v.link?'<a href="'+esc(v.link)+'" target="_blank" rel="noopener">Open in Drive</a>':'')+'</div></div>'+(S.selectedId===v.id?'<span class="badge gold">Selected</span>':'')+'</div>').join(''):'<p class="small">No videos loaded yet. Connect Google and press “Load videos”, or try Demo mode.</p>';
+}
+function selectVideo(id){S.selectedId=id;save();renderAll();suggestCopy(false);showView('compose');log('Selected: '+(selectedVideo()?selectedVideo().name:id))}
+function previewVideo(id){const v=S.videos.find(x=>x.id===id);if(!v)return;S.selectedId=id;save();renderAll();
+ if(v.demo){$('preview').removeAttribute('src');$('previewMeta').textContent='Demo item — no real file to stream. Real Drive videos stream here after Google connect.';return}
+ $('preview').src='https://drive.google.com/file/d/'+v.id+'/preview';$('previewMeta').textContent=v.name+' — if the player stays blank, open it in Drive (Google blocks some embeds). Publishing still works via download.'}
+function renderSelected(){const v=selectedVideo();if(v){$('selectedBox').innerHTML='<b>Selected:</b> '+esc(v.name)+' <span class="badge gold">'+esc(v.size||'')+'</span>';if(!$('fTitle').value)$('fTitle').value=v.title||''}}
+
+/* ---------- COMPOSE HELPERS ---------- */
+function suggestCopy(announce=true){const v=selectedVideo();const base=(v?(v.title||v.name.replace(/\.[^.]+$/,'')):'Stoic Thought').trim();
+ if(!$('fTitle').value||announce)$('fTitle').value=base;
+ if(!$('fCaption').value||announce)$('fCaption').value=base+'\n\nA Roman Stoic thought for today — pause, breathe, and apply it before the day decides for you.\n\nFollow @ResilienceResonance for 2 Stoic Shorts daily.';
+ if(!$('fTags').value||announce)$('fTags').value='stoicism, marcusaurelius, seneca, epictetus, philosophy, mindset, shorts, resilience';
+ if(announce)log('Suggested title/caption/tags filled. Edit freely before publishing.')}
+function currentJob(){const v=selectedVideo();return{app:'Krishna Muse Publisher',version:1,createdAt:new Date().toISOString(),video:v?{driveId:v.demo?null:v.id,name:v.name,driveLink:v.link||('https://drive.google.com/file/d/'+v.id+'/view'),publicUrl:v.demo?null:('https://drive.google.com/uc?export=download&id='+v.id)}:null,title:$('fTitle').value.trim(),caption:$('fCaption').value.trim(),tags:$('fTags').value.split(',').map(x=>x.trim()).filter(Boolean),privacy:$('fPrivacy').value,madeForKids:$('fKids').value==='true',schedule:$('fSchedule').value||null,platforms:PLATFORMS.filter(p=>S.platforms[p.id]).map(p=>p.id),channel:S.settings.channel}}
+function addToQueue(){const job=currentJob();if(!job.video){alert('Select a video first.');return}job.id='q'+Date.now();job.status='queued';S.queue.push(job);save();renderAll();log('Added to queue: '+job.title);showView('queue')}
+function renderQueue(){$('queueList').innerHTML=S.queue.length?'<table><tr><th>Video</th><th>Platforms</th><th>Status</th><th></th></tr>'+S.queue.map(q=>'<tr><td><b>'+esc(q.title||q.video.name)+'</b><br><span class="small">'+esc(q.video.name)+'</span></td><td>'+q.platforms.map(esc).join(', ')+'</td><td>'+esc(q.status)+'</td><td><button class="btn small secondary" onclick="removeQueue(\''+q.id+'\')">Remove</button></td></tr>').join('')+'</table>':'<p class="small">Queue is empty.</p>'}
+function removeQueue(id){S.queue=S.queue.filter(q=>q.id!==id);save();renderAll()}
+function clearQueue(){if(confirm('Clear the whole queue?')){S.queue=[];save();renderAll()}}
+async function processQueue(){if(!S.queue.length){alert('Queue is empty.');return}if(!confirm('Publish '+S.queue.length+' queued item(s) now to their ticked platforms?'))return;for(const q of [...S.queue]){applyJobToForm(q);await publishSelected(true);q.status='done'}save();renderAll()}
+function applyJobToForm(q){S.selectedId=q.video.driveId||S.selectedId;$('fTitle').value=q.title;$('fCaption').value=q.caption;$('fTags').value=q.tags.join(', ')}
+function renderHistory(){$('historyList').innerHTML=S.history.length?'<table><tr><th>When</th><th>Title</th><th>Platform</th><th>Result / Link</th></tr>'+S.history.slice().reverse().map(h=>'<tr><td>'+esc(h.when)+'</td><td>'+esc(h.title)+'</td><td>'+esc(h.platform)+'</td><td>'+(h.url?'<a href="'+esc(h.url)+'" target="_blank" rel="noopener">'+esc(h.result)+'</a>':esc(h.result))+'</td></tr>').join('')+'</table>':'<p class="small">Nothing published from this device yet.</p>'}
+function recordHistory(platform,result,url){S.history.push({when:new Date().toLocaleString(),title:$('fTitle').value.trim(),platform,result,url:url||''});save();renderStats();renderHistory()}
+function exportCSV(){const rows=[['SL NO','Title','Link','Published']];S.history.forEach((h,i)=>rows.push([i+1,h.title,h.url||'',h.platform+' — '+h.result+' ('+h.when+')']));download('publisher-history.csv',rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');log('CSV exported — columns match your “youtube videos” tracker sheet.')}
+
+/* ---------- PUBLISHING ---------- */
+async function downloadDriveBlob(id){const r=await fetch('https://www.googleapis.com/drive/v3/files/'+id+'?alt=media',{headers:{Authorization:'Bearer '+googleToken}});if(!r.ok)throw new Error('Drive download failed '+r.status);return await r.blob()}
+async function uploadYouTube(job,blob){
+ const meta={snippet:{title:job.title||job.video.name,description:job.caption,tags:job.tags,categoryId:'27'},status:{privacyStatus:job.privacy,selfDeclaredMadeForKids:job.madeForKids}};
+ const init=await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status',{method:'POST',headers:{Authorization:'Bearer '+googleToken,'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':blob.type||'video/mp4','X-Upload-Content-Length':blob.size},body:JSON.stringify(meta)});
+ if(!init.ok)throw new Error('YouTube init failed: '+(await init.text()).slice(0,300));
+ const url=init.headers.get('Location');if(!url)throw new Error('YouTube did not return an upload URL');
+ const up=await fetch(url,{method:'PUT',headers:{'Content-Type':blob.type||'video/mp4'},body:blob});const data=await up.json().catch(()=>({}));
+ if(!up.ok)throw new Error('YouTube upload failed: '+JSON.stringify(data).slice(0,300));
+ return 'https://youtube.com/shorts/'+data.id;
+}
+async function uploadFacebook(job){
+ const token=S.settings.metaToken,page=S.settings.fbPage;if(!token||!page)throw new Error('Meta Page ID + token missing in Settings');
+ const pub=job.video.publicUrl;if(!pub)throw new Error('Facebook needs a real Drive video (demo items cannot post)');
+ const start=await (await fetch('https://graph.facebook.com/v19.0/'+page+'/video_reels?upload_phase=start&access_token='+encodeURIComponent(token),{method:'POST'})).json();
+ if(!start.video_id)throw new Error('FB start failed: '+JSON.stringify(start).slice(0,250));
+ // Note: full rupload binary step depends on the upload_url host returned by Meta; we hand the public URL approach via Muse Bridge if that step is blocked by CORS in a browser.
+ throw new Error('FB session started (video_id '+start.video_id+'). Binary rupload is often CORS-blocked from GitHub Pages — finish this one via Muse Bridge webhook, which is pre-filled with this job.');
+}
+async function uploadInstagram(job){
+ const token=S.settings.metaToken,ig=S.settings.igId;if(!token||!ig)throw new Error('Instagram Business ID + token missing in Settings');
+ if(!job.video.publicUrl)throw new Error('Instagram needs a real Drive video (demo items cannot post)');
+ const create=await (await fetch('https://graph.facebook.com/v19.0/'+ig+'/media',{method:'POST',body:new URLSearchParams({media_type:'REELS',video_url:job.video.publicUrl,caption:job.caption||job.title,access_token:token})})).json();
+ if(!create.id)throw new Error('IG container failed: '+JSON.stringify(create).slice(0,250));
+ await new Promise(r=>setTimeout(r,8000));
+ const pub=await (await fetch('https://graph.facebook.com/v19.0/'+ig+'/media_publish',{method:'POST',body:new URLSearchParams({creation_id:create.id,access_token:token})})).json();
+ if(!pub.id)throw new Error('IG publish pending/failed: '+JSON.stringify(pub).slice(0,250)+' — container '+create.id+' may still be processing; retry Publish in 1 minute.');
+ return 'https://instagram.com/reel/'+pub.id;
+}
+async function sendBridge(job,platforms){
+ if(!S.settings.webhook)throw new Error('No Muse Bridge webhook set');
+ const r=await fetch(S.settings.webhook,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({},job,{platforms}))});
+ if(!r.ok)throw new Error('Webhook returned '+r.status);return true;
+}
+async function publishSelected(fromQueue=false){
+ const job=currentJob();
+ if(!job.video){alert('Select a video first.');return}
+ if(!job.platforms.length){alert('Tick at least one platform.');return}
+ if(!fromQueue&&!confirm('Publish “'+(job.title||job.video.name)+'” now to: '+job.platforms.join(', ')+'?'))return;
+ $('publishBtn').disabled=true;$('progress').style.display='block';$('progress').value=15;$('publishResult').innerHTML='';
+ const results=[];let blob=null;
+ try{
+  for(const p of job.platforms){
+   try{
+    if(p==='youtube'){if(job.video.demo)throw new Error('Demo item — connect Google + load the real Drive file to upload');if(!googleToken)throw new Error('Connect Google first');if(!blob)blob=await downloadDriveBlob(job.video.driveId);const url=await uploadYouTube(job,blob);recordHistory('YouTube','Published',url);results.push('✅ YouTube: '+url)}
+    else if(p==='instagram'){const url=await uploadInstagram(job);recordHistory('Instagram','Published',url);results.push('✅ Instagram: '+url)}
+    else if(p==='facebook'){await uploadFacebook(job);results.push('⚠️ Facebook: started, finish via bridge (see log)')}
+    else{ // bridge platforms
+      if(S.settings.webhook){await sendBridge(job,[p]);recordHistory(p,'Sent to Muse Bridge','');results.push('✅ '+p+': sent to Muse Bridge webhook')}
+      else{recordHistory(p,'Prepared as Muse Job','');results.push('📋 '+p+': no webhook — use “Prepare Muse Job” and paste it to Krishna in Muse chat')}
+    }
+   }catch(e){results.push('❌ '+p+': '+e.message);log(p+' failed: '+e.message)}
+   $('progress').value=Math.min(95,$('progress').value+15);
+  }
+ }finally{$('progress').value=100;$('publishBtn').disabled=false;setTimeout(()=>$('progress').style.display='none',1200)}
+ $('publishResult').innerHTML='<div class="card" style="background:var(--panel2)">'+results.map(esc).join('<br>')+'</div>';results.forEach(r=>log(r));renderAll();
+}
+function prepareMuseJob(){
+ const job=currentJob();const text='KRISHNA! MUSE JOB\n'+JSON.stringify(job,null,2)+'\nInstruction: Krishna, please handle the bridge platforms above and confirm each result back to me. Do not post to any platform not listed.';
+ $('jobBox').innerHTML='<textarea style="min-height:180px">'+esc(text)+'</textarea><div class="row"><button class="btn small" onclick="copyJob()">Copy job for Muse</button>'+(S.settings.webhook?'<button class="btn small secondary" onclick="sendBridge(currentJob(),currentJob().platforms).then(()=>alert(\'Sent to Muse Bridge webhook\')).catch(e=>alert(e.message))">Send via webhook</button>':'')+'</div>';
+ if($('view-compose').classList.contains('active')===false&&$('view-command').classList.contains('active')===false)showView('command');
+ window._lastJob=text;return text;
+}
+function copyJob(){const t=window._lastJob||prepareMuseJob();navigator.clipboard.writeText(t).then(()=>alert('Muse Job copied. Paste it in your Muse chat / WhatsApp with Krishna.'))}
+
+/* ---------- MUSE COMMAND PARSER ---------- */
+function chatMsg(who,text){const c=$('chat');const d=document.createElement('div');d.className='msg '+(who==='user'?'user':'muse');d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
+function parsePlatforms(txt){const all=[];if(/youtube|yt\b/.test(txt))all.push('youtube');if(/instagram|insta/.test(txt))all.push('instagram');if(/facebook|\bfb\b/.test(txt))all.push('facebook');if(/twitter|\bx\b/.test(txt))all.push('x');if(/tiktok/.test(txt))all.push('tiktok');if(/linkedin/.test(txt))all.push('linkedin');if(/\ball\b|every/.test(txt))return PLATFORMS.map(p=>p.id);return all.length?all:null}
+function runCommand(raw){
+ const input=raw||$('cmdInput').value;if(!input.trim())return;$('cmdInput').value='';chatMsg('user',input);
+ let txt=input.toLowerCase().replace(/krishna!?\s*muse/g,'').replace(/hey krishna/g,'').trim();
+ const reply=(m)=>chatMsg('muse',m);
+ if(/deploy/.test(txt)){showView('settings');reply('Deploy mode: your phrase “krishna! muse deploy” is saved for Krishna in Muse chat. Here in the app, follow the 4 GitHub Pages steps on this page — your live URL will be https://manojstars.github.io/social-publisher/');return}
+ if(/refresh|load|list/.test(txt)&&/drive|video/.test(txt)){reply('Refreshing your Drive folder…');loadDriveVideos().then(()=>reply('Done — '+S.videos.length+' video(s) found. Say “publish latest to all” when ready.'));return}
+ if(/export/.test(txt)){exportCSV();reply('History exported as CSV — columns match your YouTube tracker sheet (SL NO | Title | Link | Published).');return}
+ if(/latest|newest/.test(txt)&&S.videos.length){selectVideoSilent(S.videos[0].id)}
+ const named=S.videos.find(v=>txt&&v.title&&txt.includes(v.title.toLowerCase().slice(0,14)));if(named)selectVideoSilent(named.id);
+ if(/queue/.test(txt)&&/add/.test(txt)){addToQueueSilent();reply('Added “'+(selectedVideo()?selectedVideo().name:'')+'” to the queue.');return}
+ if(/publish|upload|post/.test(txt)){
+   const plats=parsePlatforms(txt);if(plats){PLATFORMS.forEach(p=>S.platforms[p.id]=plats.includes(p.id));save();renderPlatformChecks()}
+   if(!selectedVideo()){reply('No video selected yet. Load Drive first, then tell me which video.');return}
+   suggestCopy(false);reply('Ready to publish “'+$('fTitle').value+'” to: '+(plats||PLATFORMS.filter(p=>S.platforms[p.id]).map(p=>p.id)).join(', ')+'. Press Publish in Compose — or confirm here:');
+   showView('compose');setTimeout(()=>$('publishBtn').focus(),200);return;
+ }
+ if(/help|what can/.test(txt)){reply('Try: “krishna! muse refresh drive” • “publish latest video to all” • “upload this to youtube and instagram” • “add latest to queue” • “export history” • “deploy”');return}
+ reply('Understood: “'+input+'”. I matched no direct action, so I prepared a Muse Job for Krishna instead — check the Muse Bridge panel.');prepareMuseJob();
+}
+function selectVideoSilent(id){S.selectedId=id;save();renderAll();suggestCopy(false)}
+function addToQueueSilent(){const j=currentJob();if(!j.video)return;j.id='q'+Date.now();j.status='queued';S.queue.push(j);save();renderAll()}
+function toggleVoice(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('Voice is not supported in this browser — use Chrome.');return}
+ if(listening){recog.stop();return}
+ recog=new SR();recog.lang='en-IN';recog.interimResults=false;listening=true;$('micBtn').textContent='⏹ Stop';$('voiceStatus').textContent='Listening… say: krishna muse publish latest video to all';
+ recog.onresult=e=>{const t=e.results[0][0].transcript;$('cmdInput').value=t;runCommand(t)};
+ recog.onend=()=>{listening=false;$('micBtn').textContent='🎙 Voice';$('voiceStatus').textContent='Voice stopped.'};
+ recog.start();
+}
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
