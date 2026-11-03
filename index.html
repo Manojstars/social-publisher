@@ -45,12 +45,12 @@ progress{width:100%;height:10px}
 <body>
 <div id="loginGate"><div class="gateCard">
   <div style="font-size:34px">🪈</div><h2 style="margin:8px 0 4px">Krishna Muse Publisher — Login</h2>
-  <p class="small">Private app with its <b>own separate Supabase project</b> — nothing is shared with your CRM or its users. Login with your Publisher-only account. Your settings then sync safely to every device you login on.</p>
+  <p class="small"><b>Complete Cloud:</b> this app stores everything in its own separate Supabase project — settings, Client IDs, queue and history sync to every device after login. This browser keeps only a cache. Nothing is shared with your CRM.</p>
   <div id="cloudSetupBox">
     <label>Publisher Supabase project URL (from YOUR new Publisher project — not the CRM one)</label><input id="cUrl" placeholder="https://xxxxxxxx.supabase.co">
     <label>Publisher Supabase publishable / anon key (paste once per device, from the Publisher project — never the service_role key)</label><input id="cKey" type="password" placeholder="eyJ… / sb_publishable_…">
     <button class="btn secondary" style="width:100%" onclick="saveCloudConfig()">Save connection on this device</button>
-    <p class="small">One-time per device. Stored only in this browser.</p>
+    <p class="small">Bootstrap only: once <span class="kbd">cloud-config.json</span> is added to the GitHub repo (one-time, see PUBLISHER_LOGIN_SETUP.md), this box never appears again on any device — you will only ever type email + password.</p>
   </div>
   <div id="loginFormBox" style="display:none">
     <label>Email</label><input id="lEmail" type="email" placeholder="manojstar205@gmail.com" autocomplete="username">
@@ -70,6 +70,7 @@ progress{width:100%;height:10px}
   <button class="btn small" onclick="driveSignIn()">Connect Drive</button>
   <button class="btn small" onclick="youtubeSignIn()">Connect YouTube</button>
   <button class="btn small secondary" onclick="showView('command')">🎙 Talk to Muse</button>
+  <span id="cloudBadge" class="pill">Cloud: not logged in</span>
   <span id="userBadge" class="pill" style="display:none"></span>
   <button class="btn small secondary" id="logoutBtn" style="display:none" onclick="doLogout()">Logout</button>
 </header>
@@ -214,7 +215,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v4.0 — separate-project login + split Drive / YouTube accounts • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v5.0 — Complete Cloud (separate project) + split Drive / YouTube accounts • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -432,13 +433,17 @@ function toggleVoice(){
 
 /* ---------- LOGIN (Supabase Auth, same project as CRM) + CLOUD SYNC ---------- */
 const CLOUD_LS='manu_publisher_cloud_v2_separate';localStorage.removeItem('manu_publisher_cloud_v1');let supa=null,authUser=null,_applyingCloud=false,_cloudTimer=null;
-function cloudCfg(){try{return JSON.parse(localStorage.getItem(CLOUD_LS))||{}}catch(e){return{}}}
+let _fileCfg=null;
+function setCloudBadge(m){const b=$('cloudBadge');if(b){b.textContent=m;b.className='pill '+(m.includes('synced')||m.includes('connected')?'ok':'')}}
+function cloudCfg(){if(_fileCfg&&_fileCfg.url&&_fileCfg.key)return _fileCfg;try{return JSON.parse(localStorage.getItem(CLOUD_LS))||{}}catch(e){return{}}}
+async function loadFileCfg(){try{const r=await fetch('cloud-config.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j.url&&j.key){_fileCfg={url:String(j.url).trim(),key:String(j.key).trim()};return true}}}catch(e){}return false}
 function toggleCloudSetup(){const b=$('cloudSetupBox');b.style.display=b.style.display==='none'?'block':'none'}
 function saveCloudConfig(){const url=$('cUrl').value.trim(),key=$('cKey').value.trim();if(!url||!key){alert('Paste both the Supabase URL and the publishable/anon key.');return}localStorage.setItem(CLOUD_LS,JSON.stringify({url,key}));$('loginMsg').textContent='Connection saved on this device. Now login below.';initAuth(true)}
 function loginMsg(m){const e=$('loginMsg');if(e)e.textContent=m}
 async function initAuth(fromSave=false){
+ if(!_fileCfg)await loadFileCfg();
  const cfg=cloudCfg();
- if(!cfg.url||!cfg.key){$('loginGate').classList.add('show');$('cloudSetupBox').style.display='block';$('loginFormBox').style.display='none';loginMsg('First time on this device: paste your Publisher project URL + publishable key once (steps in PUBLISHER_LOGIN_SETUP.md), then login.');return}
+ if(!cfg.url||!cfg.key){$('loginGate').classList.add('show');$('cloudSetupBox').style.display='block';$('loginFormBox').style.display='none';loginMsg('One-time bootstrap on this device: paste the Publisher URL + publishable key — or better, add cloud-config.json to the repo once (PUBLISHER_LOGIN_SETUP.md) and no device will ever ask this again.');return}
  if(!window.supabase){loginMsg('Login library still loading — wait 3 seconds and refresh.');$('loginGate').classList.add('show');return}
  supa=window.supabase.createClient(cfg.url,cfg.key);
  const {data}=await supa.auth.getSession();
@@ -446,19 +451,19 @@ async function initAuth(fromSave=false){
  supa.auth.onAuthStateChange(async(_ev,session)=>{if(session&&session.user)await onLoggedIn(session.user)});
 }
 async function onLoggedIn(user){
- authUser=user;$('loginGate').classList.remove('show');const ub=$('userBadge');ub.style.display='inline-block';ub.textContent='👤 '+user.email;ub.className='pill ok';$('logoutBtn').style.display='inline-block';log('Logged in as '+user.email);
+ authUser=user;setCloudBadge('Cloud: connected');$('loginGate').classList.remove('show');const ub=$('userBadge');ub.style.display='inline-block';ub.textContent='👤 '+user.email;ub.className='pill ok';$('logoutBtn').style.display='inline-block';log('Logged in as '+user.email);
  await cloudLoad();
 }
 async function doLogin(){if(!supa){await initAuth();if(!supa)return}loginMsg('Logging in…');const {error}=await supa.auth.signInWithPassword({email:$('lEmail').value.trim(),password:$('lPass').value});if(error)loginMsg('Login failed: '+error.message)}
 async function doSignup(){if(!supa){await initAuth();if(!supa)return}const {error}=await supa.auth.signUp({email:$('lEmail').value.trim(),password:$('lPass').value});loginMsg(error?('Sign up failed: '+error.message):'Sign up done — click the confirmation link in your email, then Login.')}
 async function doLogout(){if(supa)await supa.auth.signOut();authUser=null;location.reload()}
-function cloudPayload(){const c=JSON.parse(JSON.stringify(S));if(c.settings){delete c.settings.metaToken}return c}
+function cloudPayload(){return JSON.parse(JSON.stringify(S))}
 function scheduleCloudSave(){if(!supa||!authUser||_applyingCloud)return;clearTimeout(_cloudTimer);_cloudTimer=setTimeout(cloudSave,1200)}
-async function cloudSave(){if(!supa||!authUser)return;try{await supa.from('publisher_state').upsert({user_id:authUser.id,state:cloudPayload(),updated_at:new Date().toISOString()});log('Settings synced to cloud (login-protected).')}catch(e){log('Cloud sync failed: '+(e.message||e))}}
+async function cloudSave(){if(!supa||!authUser)return;try{await supa.from('publisher_state').upsert({user_id:authUser.id,state:cloudPayload(),updated_at:new Date().toISOString()});setCloudBadge('Cloud: synced');log('Everything synced to cloud (login-protected).')}catch(e){log('Cloud sync failed: '+(e.message||e))}}
 async function cloudLoad(){
  if(!supa||!authUser)return;
  try{const {data,error}=await supa.from('publisher_state').select('state').eq('user_id',authUser.id).maybeSingle();if(error)throw error;
-  if(data&&data.state&&Object.keys(data.state).length){_applyingCloud=true;const localMeta=S.settings.metaToken||'';S=Object.assign(S,data.state);if(localMeta&&!S.settings.metaToken)S.settings.metaToken=localMeta;localStorage.setItem(LS,JSON.stringify(S));_applyingCloud=false;initSettingsFields();renderAll();log('Cloud settings loaded for this device.')}
+  if(data&&data.state&&Object.keys(data.state).length){_applyingCloud=true;S=Object.assign(S,data.state);localStorage.setItem(LS,JSON.stringify(S));_applyingCloud=false;initSettingsFields();renderAll();setCloudBadge('Cloud: synced');log('Cloud settings loaded — this device is fully synced.')}
   else{await cloudSave();log('No cloud settings yet — this device\u2019s settings were saved to your cloud. Other devices will load them after login.')}
  }catch(e){log('Cloud load failed (run PUBLISHER_LOGIN_SETUP.md SQL once if the table is missing): '+(e.message||e))}
 }

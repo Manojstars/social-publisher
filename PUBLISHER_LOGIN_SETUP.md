@@ -27,22 +27,33 @@ Publisher project → **Settings / Connect** (or Project Settings → API Keys):
 - Publishable (anon) key.
 ⚠️ Never copy the `service_role` / secret key into the app or chat.
 
-## Step 4 — First device
-1. Open https://manojstars.github.io/social-publisher/ (hard refresh
-   Ctrl+Shift+R so v4 loads).
-2. Login gate → paste the **new** Publisher URL + publishable key →
-   **Save connection on this device**.
-3. **Sign up** with a Publisher-only login (krishnaformanu@gmail.com fits —
-   it's your work mail — or manojstar205@gmail.com with a *different*
-   password than the CRM; these accounts are separate now).
-4. If a confirmation email arrives, click it, then **Login**.
-5. Your existing app settings on this device upload to the new project
-   automatically. The Meta token is NOT synced — it stays per device.
+## Step 4 — Make it COMPLETE CLOUD: add cloud-config.json (once, 2 min)
+So no device ever asks for the URL/key again, the app reads its public
+connection config from a file in the repo itself:
+1. Go to github.com/Manojstars/social-publisher → **Add file → Create new file**.
+2. File name: `cloud-config.json`
+3. Paste exactly this, with YOUR Publisher project's values:
+   `{"url": "https://YOUR-PROJECT.supabase.co", "key": "YOUR-PUBLISHABLE-KEY"}`
+4. **Commit changes.** Wait ~1 minute for Pages to republish.
+Is it safe for this file to be public in the repo? **Yes** — the publishable
+key is designed to be public in browser apps; your data is protected by your
+login + the row-level security rules from Step 2. The *secret / service_role*
+key is the one that must never go anywhere — and it is NOT in this file.
 
-## Step 5 — Every other device
-Open the same link → paste the new URL + key once → login with the same
-Publisher account → settings load from the cloud. Google Drive / YouTube
-sign-ins are still per browser (Google requires that).
+## Step 5 — First login (any device)
+1. Open https://manojstars.github.io/social-publisher/ (hard refresh).
+2. The gate now shows only email + password (no URL/key boxes).
+   **Sign up** with your Publisher-only login (use a mailbox you can open
+   for the confirmation link), then **Login**.
+3. Everything — settings, both Google Client IDs, even the Meta token,
+   queue and history — syncs to the cloud. This browser keeps only a cache.
+
+## Step 6 — Every other device
+Open the link → Login → everything is already there.
+The only per-device step left in the whole system is Google's own
+Drive / YouTube sign-in inside the app (Google forces a consent tap per
+browser and its tokens expire in ~1 hour — no app can cloud-sync those,
+not even Google's own apps skip it).
 
 ## Notes
 - Forgot the *project URL/key*? They're in the Publisher project settings —
