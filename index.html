@@ -33,12 +33,34 @@ textarea{min-height:92px}label{font-size:13px;color:var(--muted);font-weight:600
 .kbd{font-family:ui-monospace,monospace;background:#1e293b;padding:2px 6px;border-radius:6px;border:1px solid var(--line)}
 .notice{border:1px solid #713f12;background:#2a1a03;color:#fde68a;padding:12px;border-radius:12px}.success{border-color:#14532d;background:#052e16;color:#bbf7d0}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}
-progress{width:100%;height:10px}video.preview{width:100%;max-height:420px;background:#000;border-radius:12px}
+progress{width:100%;height:10px}
+#loginGate{position:fixed;inset:0;z-index:100;background:rgba(5,9,20,.97);display:none;place-items:center;padding:16px;overflow:auto}
+#loginGate.show{display:grid}
+.gateCard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;max-width:440px;width:100%}video.preview{width:100%;max-height:420px;background:#000;border-radius:12px}
 .small{font-size:12px;color:var(--muted)} .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.grow{flex:1}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<div id="loginGate"><div class="gateCard">
+  <div style="font-size:34px">🪈</div><h2 style="margin:8px 0 4px">Krishna Muse Publisher — Login</h2>
+  <p class="small">Private app. Login with the <b>same email &amp; password as your CRM</b> (same Supabase project). Your publisher settings then sync safely to every device you login on.</p>
+  <div id="cloudSetupBox">
+    <label>Supabase project URL</label><input id="cUrl" value="https://wlzohvuhcfiwsmaamvyb.supabase.co">
+    <label>Supabase publishable / anon key (paste once per device — same key you used in CRM Settings, never the service_role key)</label><input id="cKey" type="password" placeholder="eyJ… / sb_publishable_…">
+    <button class="btn secondary" style="width:100%" onclick="saveCloudConfig()">Save connection on this device</button>
+    <p class="small">One-time per device. Stored only in this browser.</p>
+  </div>
+  <div id="loginFormBox" style="display:none">
+    <label>Email</label><input id="lEmail" type="email" placeholder="manojstar205@gmail.com" autocomplete="username">
+    <label>Password</label><input id="lPass" type="password" placeholder="Your CRM password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn" style="width:100%" onclick="doLogin()">Login</button>
+    <div class="row" style="margin-top:10px"><button class="btn small secondary" onclick="doSignup()">Sign up (new user)</button><button class="btn small secondary" onclick="toggleCloudSetup()">Change Supabase connection</button></div>
+    <p class="small">New signups must click the email confirmation link (Confirm email is ON in your Supabase, as you chose for the CRM), then login.</p>
+  </div>
+  <div id="loginMsg" class="small" style="margin-top:10px"></div>
+</div></div>
 <header class="top">
   <div class="logo">🪈</div>
   <div class="grow"><div class="title">Krishna Muse Publisher</div><div class="sub">Google Drive → YouTube • Instagram • Facebook • X • TikTok • LinkedIn &nbsp;|&nbsp; Command: <span class="kbd">krishna! muse …</span></div></div>
@@ -48,6 +70,8 @@ progress{width:100%;height:10px}video.preview{width:100%;max-height:420px;backgr
   <button class="btn small" onclick="driveSignIn()">Connect Drive</button>
   <button class="btn small" onclick="youtubeSignIn()">Connect YouTube</button>
   <button class="btn small secondary" onclick="showView('command')">🎙 Talk to Muse</button>
+  <span id="userBadge" class="pill" style="display:none"></span>
+  <button class="btn small secondary" id="logoutBtn" style="display:none" onclick="doLogout()">Logout</button>
 </header>
 
 <div class="wrap">
@@ -190,7 +214,7 @@ progress{width:100%;height:10px}video.preview{width:100%;max-height:420px;backgr
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v2.0 — split Drive / YouTube accounts • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v3.0 — login + split Drive / YouTube accounts • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -207,7 +231,7 @@ const PLATFORMS=[
 let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,fbPage:'',igId:'',metaToken:'',webhook:'',channel:'Resilience Resonance'},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
 let googleToken='',driveToken='',ytToken='',tokenClient=null,recog=null,listening=false;
 function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
-function save(){localStorage.setItem(LS,JSON.stringify(S))}
+function save(){localStorage.setItem(LS,JSON.stringify(S));scheduleCloudSave()}
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function log(m){const el=$('log');const t=new Date().toLocaleTimeString();el.textContent+=(el.textContent?'\n':'')+'['+t+'] '+m;el.scrollTop=el.scrollHeight;console.log(m)}
@@ -221,7 +245,7 @@ function init(){
  if(location.hostname.endsWith('github.io')){$('liveBadge').textContent='● Live on GitHub Pages: '+location.hostname;$('liveBadge').className='pill ok'}
  renderPlatformChecks();renderAll();
  chatMsg('muse','Namaste Manu 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
- log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));
+ log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));initAuth();
 }
 function renderAll(){renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist()}
 function renderStats(){$('statVideos').textContent=S.videos.length;$('statQueue').textContent=S.queue.filter(q=>q.status!=='done').length;$('statPublished').textContent=S.history.length}
@@ -405,6 +429,41 @@ function toggleVoice(){
  recog.onend=()=>{listening=false;$('micBtn').textContent='🎙 Voice';$('voiceStatus').textContent='Voice stopped.'};
  recog.start();
 }
+
+/* ---------- LOGIN (Supabase Auth, same project as CRM) + CLOUD SYNC ---------- */
+const CLOUD_LS='manu_publisher_cloud_v1';let supa=null,authUser=null,_applyingCloud=false,_cloudTimer=null;
+function cloudCfg(){try{return JSON.parse(localStorage.getItem(CLOUD_LS))||{}}catch(e){return{}}}
+function toggleCloudSetup(){const b=$('cloudSetupBox');b.style.display=b.style.display==='none'?'block':'none'}
+function saveCloudConfig(){const url=$('cUrl').value.trim(),key=$('cKey').value.trim();if(!url||!key){alert('Paste both the Supabase URL and the publishable/anon key.');return}localStorage.setItem(CLOUD_LS,JSON.stringify({url,key}));$('loginMsg').textContent='Connection saved on this device. Now login below.';initAuth(true)}
+function loginMsg(m){const e=$('loginMsg');if(e)e.textContent=m}
+async function initAuth(fromSave=false){
+ const cfg=cloudCfg();
+ if(!cfg.url||!cfg.key){$('loginGate').classList.add('show');$('cloudSetupBox').style.display='block';$('loginFormBox').style.display='none';loginMsg('First time on this device: paste your Supabase publishable key once (steps in PUBLISHER_LOGIN_SETUP.md), then login.');return}
+ if(!window.supabase){loginMsg('Login library still loading — wait 3 seconds and refresh.');$('loginGate').classList.add('show');return}
+ supa=window.supabase.createClient(cfg.url,cfg.key);
+ const {data}=await supa.auth.getSession();
+ if(data.session){await onLoggedIn(data.session.user)}else{$('loginGate').classList.add('show');$('cloudSetupBox').style.display='none';$('loginFormBox').style.display='block';if(fromSave)loginMsg('Connection saved. Login with your CRM email & password.')}
+ supa.auth.onAuthStateChange(async(_ev,session)=>{if(session&&session.user)await onLoggedIn(session.user)});
+}
+async function onLoggedIn(user){
+ authUser=user;$('loginGate').classList.remove('show');const ub=$('userBadge');ub.style.display='inline-block';ub.textContent='👤 '+user.email;ub.className='pill ok';$('logoutBtn').style.display='inline-block';log('Logged in as '+user.email);
+ await cloudLoad();
+}
+async function doLogin(){if(!supa){await initAuth();if(!supa)return}loginMsg('Logging in…');const {error}=await supa.auth.signInWithPassword({email:$('lEmail').value.trim(),password:$('lPass').value});if(error)loginMsg('Login failed: '+error.message)}
+async function doSignup(){if(!supa){await initAuth();if(!supa)return}const {error}=await supa.auth.signUp({email:$('lEmail').value.trim(),password:$('lPass').value});loginMsg(error?('Sign up failed: '+error.message):'Sign up done — click the confirmation link in your email, then Login.')}
+async function doLogout(){if(supa)await supa.auth.signOut();authUser=null;location.reload()}
+function cloudPayload(){const c=JSON.parse(JSON.stringify(S));if(c.settings){delete c.settings.metaToken}return c}
+function scheduleCloudSave(){if(!supa||!authUser||_applyingCloud)return;clearTimeout(_cloudTimer);_cloudTimer=setTimeout(cloudSave,1200)}
+async function cloudSave(){if(!supa||!authUser)return;try{await supa.from('publisher_state').upsert({user_id:authUser.id,state:cloudPayload(),updated_at:new Date().toISOString()});log('Settings synced to cloud (login-protected).')}catch(e){log('Cloud sync failed: '+(e.message||e))}}
+async function cloudLoad(){
+ if(!supa||!authUser)return;
+ try{const {data,error}=await supa.from('publisher_state').select('state').eq('user_id',authUser.id).maybeSingle();if(error)throw error;
+  if(data&&data.state&&Object.keys(data.state).length){_applyingCloud=true;const localMeta=S.settings.metaToken||'';S=Object.assign(S,data.state);if(localMeta&&!S.settings.metaToken)S.settings.metaToken=localMeta;localStorage.setItem(LS,JSON.stringify(S));_applyingCloud=false;initSettingsFields();renderAll();log('Cloud settings loaded for this device.')}
+  else{await cloudSave();log('No cloud settings yet — this device\u2019s settings were saved to your cloud. Other devices will load them after login.')}
+ }catch(e){log('Cloud load failed (run PUBLISHER_LOGIN_SETUP.md SQL once if the table is missing): '+(e.message||e))}
+}
+function initSettingsFields(){$('folderInput').value=S.settings.folder||DEFAULT_FOLDER;$('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolder').value=S.settings.folder||DEFAULT_FOLDER;$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sMetaToken').value=S.settings.metaToken||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'Resilience Resonance'}
+
 window.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
