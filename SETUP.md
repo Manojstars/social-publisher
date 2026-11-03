@@ -79,3 +79,21 @@ In the app's Command Center (or voice):
 - `krishna! muse deploy`
 
 In Muse chat: `krishna! muse deploy` = Krishna packages the latest app zip for GitHub upload.
+
+## Google Sheets tracker (v6)
+The app is pre-linked to Manu's tracker sheet **"youtube videos- muse Ai -
+Gflow - youtube"** (columns: A SL NO | B Title | C Link | D Published).
+- Before every YouTube upload it re-reads the sheet: if the title already
+  has **Published = YES**, the upload is blocked as a duplicate.
+- After a confirmed upload it writes the YouTube link into column C and
+  sets **Published = YES** (updating the matching row, or appending a new
+  row with the next SL NO).
+- The Drive Videos list shows a badge per video: *Sheet: Published YES* /
+  *Sheet: added, not published* / *Sheet: not added*. The **Validate with
+  Google Sheet** button refreshes this any time.
+- One-time Google setup (Drive project): enable the **Google Sheets API**
+  (APIs & Services → Library → Google Sheets API → Enable), then in the app
+  **Reconnect Drive** once so Google asks for the new Sheets permission.
+  The sheet must belong to (or be shared with) the Drive sign-in account.
+- A different sheet can be used any time: paste its link in
+  Settings → Google Sheets Tracker.

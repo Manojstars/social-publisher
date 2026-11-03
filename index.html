@@ -114,7 +114,7 @@ progress{width:100%;height:10px}
         <h3 style="margin-top:0">Google Drive source</h3>
         <label>Drive folder ID or link</label><input id="folderInput" placeholder="Folder ID">
         <div class="small">Pre-filled with your shared folder: “Muse - AI - Automation”. You can paste any folder link — the ID is extracted automatically.</div>
-        <div class="row" style="margin-top:12px"><button class="btn" onclick="loadDriveVideos()">Load videos</button><button class="btn secondary" onclick="loadDemo()">Demo videos</button></div>
+        <div class="row" style="margin-top:12px"><button class="btn" onclick="loadDriveVideos()">Load videos</button><button class="btn secondary" onclick="loadSheetRows()">Validate with Google Sheet</button><button class="btn secondary" onclick="loadDemo()">Demo videos</button></div>
         <label style="margin-top:14px;display:block">Search</label><input id="driveSearch" placeholder="Search title…" oninput="renderVideos()">
         <div class="small">Supported: mp4, mov, webm, m4v. Videos are downloaded in your browser only when publishing to YouTube; for Instagram the Drive public link is used.</div>
       </div>
@@ -190,11 +190,14 @@ progress{width:100%;height:10px}
   <!-- SETTINGS -->
   <section id="view-settings" class="view">
     <div class="grid">
-      <div class="card span6"><h3 style="margin-top:0">Settings (stored only in your browser)</h3>
+      <div class="card span6"><h3 style="margin-top:0">Settings (synced to your private cloud)</h3>
         <label>Drive API — OAuth Client ID (create/sign-in under Manoj Stars account — Drive owner)</label><input id="sDriveClient" placeholder="Drive account: xxxx.apps.googleusercontent.com">
         <label>YouTube API — OAuth Client ID (create/sign-in under starkojunction@gmail.com — channel owner)</label><input id="sYtClient" placeholder="YouTube account: xxxx.apps.googleusercontent.com">
         <div class="small">Two separate sign-ins are supported: Drive videos are read with the Drive account token, YouTube uploads use the YouTube account token. You may also use the same Client ID in both boxes if one project is shared — the accounts you pick at sign-in are what matter.</div>
         <label>Default Drive Folder ID</label><input id="sFolder" placeholder="Folder ID">
+        <label>Google Sheets Tracker — spreadsheet link or ID (your “youtube videos” sheet)</label><input id="sSheet" placeholder="Spreadsheet link or ID">
+        <label>Sheet tab name (blank = first tab)</label><input id="sSheetTab" placeholder="Blank = first tab">
+        <div class="small">Tracker columns: A = SL NO, B = Title, C = Link, D = Published. Before every upload the app checks this sheet and blocks duplicates (Published = YES). After a confirmed upload it writes the YouTube link and sets Published = YES automatically.</div>
         <label>Meta: Facebook Page ID</label><input id="sFbPage" placeholder="Page ID">
         <label>Meta: Instagram Business Account ID</label><input id="sIgId" placeholder="IG user ID">
         <label>Meta: Page Access Token (paste, never commit to GitHub)</label><input id="sMetaToken" type="password" placeholder="EAA…">
@@ -215,12 +218,13 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v5.0 — Complete Cloud (separate project) + split Drive / YouTube accounts • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v6.0 — Complete Cloud + Google Sheets tracker validation (Published YES) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
 const LS='manu_social_publisher_v1';
 const DEFAULT_FOLDER='1rkK6gsGlz3c-1TcyY3O3ynrf8TnFRDJa';
+const DEFAULT_SHEET='1eAQVpj_3C9Ud9Ua9NL3ILoL8lsv4H1UjMGXwhonHeP4';
 const PLATFORMS=[
  {id:'youtube',name:'YouTube Shorts',icon:'▶️',mode:'direct'},
  {id:'instagram',name:'Instagram Reels',icon:'📸',mode:'meta'},
@@ -229,7 +233,7 @@ const PLATFORMS=[
  {id:'tiktok',name:'TikTok',icon:'🎵',mode:'bridge'},
  {id:'linkedin',name:'LinkedIn',icon:'💼',mode:'bridge'}
 ];
-let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,fbPage:'',igId:'',metaToken:'',webhook:'',channel:'Resilience Resonance'},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
+let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,sheet:DEFAULT_SHEET,sheetTab:'',fbPage:'',igId:'',metaToken:'',webhook:'',channel:'Resilience Resonance'},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
 let googleToken='',driveToken='',ytToken='',tokenClient=null,recog=null,listening=false;
 function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
 function save(){localStorage.setItem(LS,JSON.stringify(S));scheduleCloudSave()}
@@ -242,7 +246,7 @@ function folderIdFrom(v){if(!v)return DEFAULT_FOLDER;const m=String(v).match(/[-
 function selectedVideo(){return S.videos.find(v=>v.id===S.selectedId)||null}
 function init(){
  $('folderInput').value=S.settings.folder||DEFAULT_FOLDER;
- $('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolder').value=S.settings.folder||DEFAULT_FOLDER;$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sMetaToken').value=S.settings.metaToken||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'Resilience Resonance';
+ $('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolder').value=S.settings.folder||DEFAULT_FOLDER;$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sMetaToken').value=S.settings.metaToken||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'Resilience Resonance';$('sSheet').value=S.settings.sheet||DEFAULT_SHEET;$('sSheetTab').value=S.settings.sheetTab||'';
  if(location.hostname.endsWith('github.io')){$('liveBadge').textContent='● Live on GitHub Pages: '+location.hostname;$('liveBadge').className='pill ok'}
  renderPlatformChecks();renderAll();
  chatMsg('muse','Namaste Manu 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
@@ -266,7 +270,7 @@ function renderChecklist(){
 function renderPlatformChecks(){
  $('platformChecks').innerHTML=PLATFORMS.map(p=>'<label class="check"><input type="checkbox" data-plat="'+p.id+'" '+(S.platforms[p.id]?'checked':'')+' onchange="S.platforms[this.dataset.plat]=this.checked;save()"><span><b>'+p.icon+' '+esc(p.name)+'</b><br><span class="small">'+(p.mode==='direct'?'Direct upload from browser':p.mode==='meta'?'Meta Graph API':'Via Muse Bridge webhook / Muse Job')+'</span></span></label>').join('');
 }
-function saveSettings(){const dc=$('sDriveClient').value.trim(),yc=$('sYtClient').value.trim();S.settings={googleClient:dc||yc,driveClient:dc,youtubeClient:yc,folder:folderIdFrom($('sFolder').value),fbPage:$('sFbPage').value.trim(),igId:$('sIgId').value.trim(),metaToken:$('sMetaToken').value.trim(),webhook:$('sWebhook').value.trim(),channel:$('sChannel').value.trim()||'Resilience Resonance'};$('folderInput').value=S.settings.folder;save();renderAll();alert('Settings saved in this browser only.');log('Settings saved.')}
+function saveSettings(){const dc=$('sDriveClient').value.trim(),yc=$('sYtClient').value.trim();S.settings={googleClient:dc||yc,driveClient:dc,youtubeClient:yc,folder:folderIdFrom($('sFolder').value),sheet:sheetIdFrom($('sSheet').value),sheetTab:$('sSheetTab').value.trim(),fbPage:$('sFbPage').value.trim(),igId:$('sIgId').value.trim(),metaToken:$('sMetaToken').value.trim(),webhook:$('sWebhook').value.trim(),channel:$('sChannel').value.trim()||'Resilience Resonance'};$('folderInput').value=S.settings.folder;save();renderAll();alert('Settings saved — synced to your cloud account.');log('Settings saved.')}
 function exportSettings(){download('publisher-settings-backup.json',JSON.stringify({settings:Object.assign({},S.settings,{metaToken:'(removed for safety)'})},null,2),'application/json')}
 function wipeAll(){if(confirm('Wipe all local app data on this device?')){localStorage.removeItem(LS);location.reload()}}
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
@@ -286,7 +290,7 @@ function driveSignIn(){
  const cid=S.settings.driveClient||S.settings.googleClient;
  if(!cid){alert('First add the Drive OAuth Client ID in Settings (created under the Manoj Stars account). See SETUP.md step 2A.');showView('settings');return}
  if(!window.google||!google.accounts){alert('Google sign-in library is still loading — wait 3 seconds and try again.');return}
- makeTokenClient(cid,'https://www.googleapis.com/auth/drive.readonly',r=>{if(r.error){log('Drive sign-in error: '+r.error);alert('Drive sign-in failed: '+r.error);return}driveToken=r.access_token;googleToken=driveToken;$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive connected (sign in with the Manoj Stars account in the Google popup).');loadDriveVideos();}).requestAccessToken({prompt:'consent',hint:''});
+ makeTokenClient(cid,'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets',r=>{if(r.error){log('Drive sign-in error: '+r.error);alert('Drive sign-in failed: '+r.error);return}driveToken=r.access_token;googleToken=driveToken;$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive connected (sign in with the Manoj Stars account in the Google popup).');loadDriveVideos();}).requestAccessToken({prompt:'consent',hint:''});
 }
 function youtubeSignIn(){
  const cid=S.settings.youtubeClient||S.settings.googleClient;
@@ -303,12 +307,12 @@ async function loadDriveVideos(){
   const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name,mimeType,size,thumbnailLink,webViewLink,createdTime)&orderBy=createdTime desc&pageSize=100',{headers:{Authorization:'Bearer '+driveToken}});
   const data=await res.json();if(!res.ok)throw new Error((data.error&&data.error.message)||res.status);
   S.videos=(data.files||[]).map(f=>({id:f.id,name:f.name,title:f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '),size:f.size?Math.round(f.size/1048576*10)/10+' MB':'—',thumb:f.thumbnailLink,link:f.webViewLink}));
-  if(S.videos.length)S.selectedId=S.videos[0].id;save();renderAll();log('Drive: '+S.videos.length+' video(s) found.');
+  if(S.videos.length)S.selectedId=S.videos[0].id;save();renderAll();log('Drive: '+S.videos.length+' video(s) found.');loadSheetRows(true);
  }catch(e){log('Drive load failed: '+e.message);alert('Drive load failed: '+e.message+'\nCheck folder sharing + that Drive API is enabled.')}
 }
 function renderVideos(){
  const q=($('driveSearch')?$('driveSearch').value.toLowerCase():'');const list=S.videos.filter(v=>!q||v.name.toLowerCase().includes(q));
- $('videoList').innerHTML=list.length?list.map(v=>'<div class="video">'+(v.thumb?'<img class="thumb" src="'+esc(v.thumb)+'" alt="">':'<div class="thumb" style="display:grid;place-items:center;font-size:28px">🎬</div>')+'<div class="grow"><b>'+esc(v.title||v.name)+'</b><div class="small">'+esc(v.name)+' • '+esc(v.size||'')+(v.demo?' • DEMO':'')+'</div><div class="row" style="margin-top:8px"><button class="btn small" onclick="selectVideo(\''+v.id+'\')">Use this video</button><button class="btn small secondary" onclick="previewVideo(\''+v.id+'\')">Preview</button>'+(v.link?'<a href="'+esc(v.link)+'" target="_blank" rel="noopener">Open in Drive</a>':'')+'</div></div>'+(S.selectedId===v.id?'<span class="badge gold">Selected</span>':'')+'</div>').join(''):'<p class="small">No videos loaded yet. Connect Google and press “Load videos”, or try Demo mode.</p>';
+ $('videoList').innerHTML=list.length?list.map(v=>'<div class="video">'+(v.thumb?'<img class="thumb" src="'+esc(v.thumb)+'" alt="">':'<div class="thumb" style="display:grid;place-items:center;font-size:28px">🎬</div>')+'<div class="grow"><b>'+esc(v.title||v.name)+'</b><div class="small">'+esc(v.name)+' • '+esc(v.size||'')+(v.demo?' • DEMO':'')+'</div><div class="row" style="margin-top:8px"><button class="btn small" onclick="selectVideo(\''+v.id+'\')">Use this video</button><button class="btn small secondary" onclick="previewVideo(\''+v.id+'\')">Preview</button>'+(v.link?'<a href="'+esc(v.link)+'" target="_blank" rel="noopener">Open in Drive</a>':'')+'</div></div>'+(S.selectedId===v.id?'<span class="badge gold">Selected</span>':'')+sheetBadgeHtml(v)+'</div>').join(''):'<p class="small">No videos loaded yet. Connect Google and press “Load videos”, or try Demo mode.</p>';
 }
 function selectVideo(id){S.selectedId=id;save();renderAll();suggestCopy(false);showView('compose');log('Selected: '+(selectedVideo()?selectedVideo().name:id))}
 function previewVideo(id){const v=S.videos.find(x=>x.id===id);if(!v)return;S.selectedId=id;save();renderAll();
@@ -332,6 +336,24 @@ function applyJobToForm(q){S.selectedId=q.video.driveId||S.selectedId;$('fTitle'
 function renderHistory(){$('historyList').innerHTML=S.history.length?'<table><tr><th>When</th><th>Title</th><th>Platform</th><th>Result / Link</th></tr>'+S.history.slice().reverse().map(h=>'<tr><td>'+esc(h.when)+'</td><td>'+esc(h.title)+'</td><td>'+esc(h.platform)+'</td><td>'+(h.url?'<a href="'+esc(h.url)+'" target="_blank" rel="noopener">'+esc(h.result)+'</a>':esc(h.result))+'</td></tr>').join('')+'</table>':'<p class="small">Nothing published from this device yet.</p>'}
 function recordHistory(platform,result,url){S.history.push({when:new Date().toLocaleString(),title:$('fTitle').value.trim(),platform,result,url:url||''});save();renderStats();renderHistory()}
 function exportCSV(){const rows=[['SL NO','Title','Link','Published']];S.history.forEach((h,i)=>rows.push([i+1,h.title,h.url||'',h.platform+' — '+h.result+' ('+h.when+')']));download('publisher-history.csv',rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');log('CSV exported — columns match your “youtube videos” tracker sheet.')}
+
+/* ---------- GOOGLE SHEETS TRACKER ---------- */
+function sheetIdFrom(v){if(!v)return DEFAULT_SHEET;const m=String(v).match(/\/d\/([-\w]{20,})/);if(m)return m[1];const m2=String(v).match(/^([-\w]{20,})$/);return m2?m2[1]:String(v).trim()}
+function normTitle(s){return String(s||'').toLowerCase().replace(/\.[a-z0-9]+$/,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function sheetRange(a1){const tab=(S.settings.sheetTab||'').trim();return (tab?("'"+tab.replace(/'/g,"''")+"'!"):'')+a1}
+async function sheetsFetch(path,opts){const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheetIdFrom(S.settings.sheet)+path,Object.assign({headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'}},opts||{}));const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error((d.error&&d.error.message)||('Sheets API '+r.status));return d}
+async function loadSheetRows(silent){if(!driveToken){if(!silent)alert('Connect Drive first — the tracker sheet is read with your Drive sign-in (it now also asks for Sheets permission).');return null}
+ try{const d=await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A1:D1000')));const vals=d.values||[];S.sheetRows=vals.map((r,i)=>({row:i+1,sl:r[0]||'',title:r[1]||'',link:r[2]||'',published:r[3]||''})).filter(x=>x.row>1&&(x.title||x.link));save();renderVideos();log('Sheet validated: '+S.sheetRows.length+' row(s) in tracker, '+S.sheetRows.filter(x=>String(x.published).trim().toUpperCase()==='YES').length+' marked Published YES.');return S.sheetRows}
+ catch(e){log('Sheet validation failed: '+e.message);if(!silent)alert('Could not read the tracker sheet:\n'+e.message+'\n\nCheck: 1) Google Sheets API is enabled in the Drive Google Cloud project, 2) you Reconnected Drive after the v6 update (new Sheets permission), 3) the sheet belongs to / is shared with the account you signed in with.');return null}}
+function sheetStatusFor(v){const rows=S.sheetRows||[];if(!rows.length)return null;const nt=normTitle(v.title||v.name);const row=rows.find(r=>normTitle(r.title)===nt)||rows.find(r=>r.link&&v.link&&r.link===v.link);if(!row)return{state:'missing',label:'Sheet: not added'};if(String(row.published).trim().toUpperCase()==='YES')return{state:'yes',label:'Sheet: Published YES',row};return{state:'added',label:'Sheet: added, not published',row}}
+function sheetBadgeHtml(v){const st=sheetStatusFor(v);if(!st)return'';return '<span class="badge '+(st.state==='yes'?'gold':'')+'">'+esc(st.label)+'</span>'}
+async function validateBeforeUpload(job){if(!sheetIdFrom(S.settings.sheet))return true;const rows=await loadSheetRows(true);if(!rows){log('Sheet validation could not run (Drive not connected) — upload not blocked. Connect Drive to enable duplicate checks.');return true}const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink});if(st&&st.state==='yes'){alert('Already uploaded — the tracker sheet has Published = YES for \u201C'+(job.title||job.video.name)+'\u201D. Upload skipped to avoid a duplicate.');log('Upload blocked by sheet validation: already Published YES.');return false}log('Sheet check before upload: '+(st?st.label:'not added — a new row will be created after upload')+'.');return true}
+async function markSheetPublished(job,url){if(!driveToken||!sheetIdFrom(S.settings.sheet)){log('Sheet not updated (Drive not connected).');return}
+ try{const rows=(S.sheetRows&&S.sheetRows.length)?S.sheetRows:((await loadSheetRows(true))||[]);const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink});const title=job.title||job.video.name;
+  if(st&&st.row){const r=st.row;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A'+r.row+':D'+r.row))+'?valueInputOption=USER_ENTERED',{method:'PUT',body:JSON.stringify({values:[[r.sl||(r.row-1),title,url,'YES']]})});log('Sheet updated: row '+r.row+' → Published YES with the YouTube link.')}
+  else{const nextSl=rows.reduce((mx,x)=>Math.max(mx,parseInt(x.sl)||0),0)+1;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A:D'))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS',{method:'POST',body:JSON.stringify({values:[[nextSl,title,url,'YES']]})});log('Sheet: new row '+nextSl+' added → Published YES.')}
+  await loadSheetRows(true);
+ }catch(e){log('Sheet mark-YES failed: '+e.message+' — the upload itself succeeded; please update the sheet manually.')}}
 
 /* ---------- PUBLISHING ---------- */
 async function downloadDriveBlob(id){const r=await fetch('https://www.googleapis.com/drive/v3/files/'+id+'?alt=media',{headers:{Authorization:'Bearer '+driveToken}});if(!r.ok)throw new Error('Drive download failed '+r.status);return await r.blob()}
@@ -372,12 +394,13 @@ async function publishSelected(fromQueue=false){
  if(!job.video){alert('Select a video first.');return}
  if(!job.platforms.length){alert('Tick at least one platform.');return}
  if(!fromQueue&&!confirm('Publish “'+(job.title||job.video.name)+'” now to: '+job.platforms.join(', ')+'?'))return;
+ if(job.platforms.includes('youtube')){const okSheet=await validateBeforeUpload(job);if(!okSheet)return}
  $('publishBtn').disabled=true;$('progress').style.display='block';$('progress').value=15;$('publishResult').innerHTML='';
  const results=[];let blob=null;
  try{
   for(const p of job.platforms){
    try{
-    if(p==='youtube'){if(job.video.demo)throw new Error('Demo item — connect Google + load the real Drive file to upload');if(!ytToken)throw new Error('Connect YouTube first (top button, starkojunction account)');if(!blob)blob=await downloadDriveBlob(job.video.driveId);const url=await uploadYouTube(job,blob);recordHistory('YouTube','Published',url);results.push('✅ YouTube: '+url)}
+    if(p==='youtube'){if(job.video.demo)throw new Error('Demo item — connect Google + load the real Drive file to upload');if(!ytToken)throw new Error('Connect YouTube first (top button, starkojunction account)');if(!blob)blob=await downloadDriveBlob(job.video.driveId);const url=await uploadYouTube(job,blob);recordHistory('YouTube','Published',url);await markSheetPublished(job,url);results.push('✅ YouTube: '+url)}
     else if(p==='instagram'){const url=await uploadInstagram(job);recordHistory('Instagram','Published',url);results.push('✅ Instagram: '+url)}
     else if(p==='facebook'){await uploadFacebook(job);results.push('⚠️ Facebook: started, finish via bridge (see log)')}
     else{ // bridge platforms
