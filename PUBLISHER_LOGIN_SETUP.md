@@ -1,38 +1,52 @@
-# Publisher Login Setup — one-time, ~5 minutes
+# Publisher Login Setup — SEPARATE Supabase project (v4)
 
-The publisher (v3) uses the **same Supabase project and the same login**
-as your CRM (`manojstar205@gmail.com`). No new account, no new project.
+Decision (2026-11-03): the Publisher does **NOT** use the CRM's Supabase
+project. It gets its own free project, so CRM users can never log into the
+Publisher and Publisher signups never appear in the CRM. Your CRM and its
+database are completely untouched by this setup.
 
-## Step 1 — Create the sync table (once, 2 min)
-1. Open your Supabase project → **SQL Editor** → New query.
+## Step 1 — Create the Publisher project (once, ~3 min)
+1. Go to supabase.com → your account → **New project**.
+2. Organization: your existing org. Name: `Muse Publisher`.
+3. Region: Central EU (Frankfurt) — same as your CRM, or the nearest offered.
+4. Set a **database password** when asked — save it in your password manager
+   / secure storage. You won't need it for the app, only for project admin.
+   Do NOT paste it in chat.
+5. Plan: Free → Create. Wait ~2 minutes until the project shows Healthy.
+
+## Step 2 — Create the sync table in the NEW project (once, 2 min)
+1. In the **Publisher project** (check the name at the top — not the CRM
+   project) → **SQL Editor** → New query.
 2. Paste all of `publisher-login-setup.sql` → **Run**.
 3. Expect: "Success" + the verify query lists `publisher_state | true`.
-   This table stores your publisher settings, locked so each logged-in
-   user can only see their own row (RLS). Anonymous visitors get nothing.
+   This is the only table the Publisher uses, locked per user (RLS).
 
-## Step 2 — First device (the one where you already use the app)
-1. Open https://manojstars.github.io/social-publisher/ (hard refresh).
-2. Login gate → Supabase URL is pre-filled with your project.
-   Paste your **publishable / anon key** (same value you pasted in CRM
-   Settings → Cloud Sync — from Supabase → Project Settings → API Keys).
-   ⚠️ Never the `service_role` key. → **Save connection on this device**.
-3. Login with your **CRM email + password**.
-4. Your current settings (Drive Client ID etc.) upload to the cloud
-   automatically. The Meta token is NOT synced — it stays on each device.
+## Step 3 — Get the new project's URL + publishable key
+Publisher project → **Settings / Connect** (or Project Settings → API Keys):
+- Project URL: `https://<something>.supabase.co`
+- Publishable (anon) key.
+⚠️ Never copy the `service_role` / secret key into the app or chat.
 
-## Step 3 — Every other device (phone, office PC, etc.)
-1. Open the same live link.
-2. Paste the publishable key once on that device (Step 2.2), then login
-   with the same email + password.
-3. Your settings, queue and history load from the cloud automatically.
-   You only re-do the Google Drive / YouTube sign-ins per device —
-   Google requires that per browser, no app can skip it.
+## Step 4 — First device
+1. Open https://manojstars.github.io/social-publisher/ (hard refresh
+   Ctrl+Shift+R so v4 loads).
+2. Login gate → paste the **new** Publisher URL + publishable key →
+   **Save connection on this device**.
+3. **Sign up** with a Publisher-only login (krishnaformanu@gmail.com fits —
+   it's your work mail — or manojstar205@gmail.com with a *different*
+   password than the CRM; these accounts are separate now).
+4. If a confirmation email arrives, click it, then **Login**.
+5. Your existing app settings on this device upload to the new project
+   automatically. The Meta token is NOT synced — it stays per device.
+
+## Step 5 — Every other device
+Open the same link → paste the new URL + key once → login with the same
+Publisher account → settings load from the cloud. Google Drive / YouTube
+sign-ins are still per browser (Google requires that).
 
 ## Notes
-- Confirm email stays **ON** (your choice for the CRM): brand-new signups
-  must click the email link before first login. Your existing CRM login
-  already works — no signup needed.
-- Forgetting the password: Supabase Dashboard → Authentication → Users,
-  or use the CRM's reset flow — it's literally the same account.
-- Safety model: the public app link shows only a login gate. Without a
-  login, no settings, no videos and no posting — on every device.
+- Forgot the *project URL/key*? They're in the Publisher project settings —
+  the gate has "Change Supabase connection" if you pasted the wrong one.
+- The old CRM project will simply never be used by the Publisher. If you ran
+  the publisher SQL in the CRM project earlier by mistake, nothing breaks —
+  that table just sits unused; you may leave it or drop it later.

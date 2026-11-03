@@ -1,6 +1,6 @@
--- Krishna Muse Publisher — login + multi-device sync setup
--- Run ONCE in your EXISTING Supabase project (the same one as your CRM):
--- Supabase Dashboard → SQL Editor → New query → paste all → Run.
+-- Krishna Muse Publisher — login + multi-device sync setup (v4, SEPARATE project)
+-- Run ONCE in your NEW Publisher-only Supabase project (NOT the CRM project):
+-- Supabase Dashboard → (Publisher project) → SQL Editor → New query → paste all → Run.
 -- Safe to re-run.
 
 create table if not exists public.publisher_state (

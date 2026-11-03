@@ -45,19 +45,19 @@ progress{width:100%;height:10px}
 <body>
 <div id="loginGate"><div class="gateCard">
   <div style="font-size:34px">🪈</div><h2 style="margin:8px 0 4px">Krishna Muse Publisher — Login</h2>
-  <p class="small">Private app. Login with the <b>same email &amp; password as your CRM</b> (same Supabase project). Your publisher settings then sync safely to every device you login on.</p>
+  <p class="small">Private app with its <b>own separate Supabase project</b> — nothing is shared with your CRM or its users. Login with your Publisher-only account. Your settings then sync safely to every device you login on.</p>
   <div id="cloudSetupBox">
-    <label>Supabase project URL</label><input id="cUrl" value="https://wlzohvuhcfiwsmaamvyb.supabase.co">
-    <label>Supabase publishable / anon key (paste once per device — same key you used in CRM Settings, never the service_role key)</label><input id="cKey" type="password" placeholder="eyJ… / sb_publishable_…">
+    <label>Publisher Supabase project URL (from YOUR new Publisher project — not the CRM one)</label><input id="cUrl" placeholder="https://xxxxxxxx.supabase.co">
+    <label>Publisher Supabase publishable / anon key (paste once per device, from the Publisher project — never the service_role key)</label><input id="cKey" type="password" placeholder="eyJ… / sb_publishable_…">
     <button class="btn secondary" style="width:100%" onclick="saveCloudConfig()">Save connection on this device</button>
     <p class="small">One-time per device. Stored only in this browser.</p>
   </div>
   <div id="loginFormBox" style="display:none">
     <label>Email</label><input id="lEmail" type="email" placeholder="manojstar205@gmail.com" autocomplete="username">
-    <label>Password</label><input id="lPass" type="password" placeholder="Your CRM password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <label>Password</label><input id="lPass" type="password" placeholder="Your Publisher password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="btn" style="width:100%" onclick="doLogin()">Login</button>
     <div class="row" style="margin-top:10px"><button class="btn small secondary" onclick="doSignup()">Sign up (new user)</button><button class="btn small secondary" onclick="toggleCloudSetup()">Change Supabase connection</button></div>
-    <p class="small">New signups must click the email confirmation link (Confirm email is ON in your Supabase, as you chose for the CRM), then login.</p>
+    <p class="small">First time here? Use Sign up with your Publisher-only email (e.g. krishnaformanu@gmail.com or manojstar205@gmail.com), click the email confirmation link if asked, then Login. This account exists only in the Publisher project — CRM users cannot use it, and it cannot open the CRM.</p>
   </div>
   <div id="loginMsg" class="small" style="margin-top:10px"></div>
 </div></div>
@@ -214,7 +214,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v3.0 — login + split Drive / YouTube accounts • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v4.0 — separate-project login + split Drive / YouTube accounts • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -431,14 +431,14 @@ function toggleVoice(){
 }
 
 /* ---------- LOGIN (Supabase Auth, same project as CRM) + CLOUD SYNC ---------- */
-const CLOUD_LS='manu_publisher_cloud_v1';let supa=null,authUser=null,_applyingCloud=false,_cloudTimer=null;
+const CLOUD_LS='manu_publisher_cloud_v2_separate';localStorage.removeItem('manu_publisher_cloud_v1');let supa=null,authUser=null,_applyingCloud=false,_cloudTimer=null;
 function cloudCfg(){try{return JSON.parse(localStorage.getItem(CLOUD_LS))||{}}catch(e){return{}}}
 function toggleCloudSetup(){const b=$('cloudSetupBox');b.style.display=b.style.display==='none'?'block':'none'}
 function saveCloudConfig(){const url=$('cUrl').value.trim(),key=$('cKey').value.trim();if(!url||!key){alert('Paste both the Supabase URL and the publishable/anon key.');return}localStorage.setItem(CLOUD_LS,JSON.stringify({url,key}));$('loginMsg').textContent='Connection saved on this device. Now login below.';initAuth(true)}
 function loginMsg(m){const e=$('loginMsg');if(e)e.textContent=m}
 async function initAuth(fromSave=false){
  const cfg=cloudCfg();
- if(!cfg.url||!cfg.key){$('loginGate').classList.add('show');$('cloudSetupBox').style.display='block';$('loginFormBox').style.display='none';loginMsg('First time on this device: paste your Supabase publishable key once (steps in PUBLISHER_LOGIN_SETUP.md), then login.');return}
+ if(!cfg.url||!cfg.key){$('loginGate').classList.add('show');$('cloudSetupBox').style.display='block';$('loginFormBox').style.display='none';loginMsg('First time on this device: paste your Publisher project URL + publishable key once (steps in PUBLISHER_LOGIN_SETUP.md), then login.');return}
  if(!window.supabase){loginMsg('Login library still loading — wait 3 seconds and refresh.');$('loginGate').classList.add('show');return}
  supa=window.supabase.createClient(cfg.url,cfg.key);
  const {data}=await supa.auth.getSession();
