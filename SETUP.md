@@ -7,20 +7,36 @@ Settings page on your own device — never into chat, never into GitHub.
 Follow README → Deploy. Note your live URL, e.g.
 `https://manojstars.github.io/social-publisher/`
 
-## 2. Google (Drive + YouTube) — free
-1. Go to console.cloud.google.com → create project `Muse Publisher`.
-2. APIs & Services → Library → enable **Google Drive API** and **YouTube Data API v3**.
-3. OAuth consent screen → External → app name `Muse Publisher` →
-   add your email (starkojunction@gmail.com) as a Test user.
+## 2. Google — TWO separate accounts (v2 split setup) — free
+The videos live in the **Manoj Stars** account's Drive, the channel lives in
+**starkojunction@gmail.com**. The app now has separate Drive and YouTube
+sign-ins, so do this setup TWICE, once in each Google account:
+
+### 2A. Drive setup (do it signed in as Manoj Stars — the Drive owner)
+1. console.cloud.google.com → create project `Muse Publisher Drive`.
+2. APIs & Services → Library → enable **Google Drive API**.
+3. OAuth consent screen → External → add the Manoj Stars email as a Test user.
 4. Credentials → Create Credentials → OAuth client ID → **Web application**.
-   - Authorized JavaScript origins: add your live URL origin exactly:
-     `https://manojstars.github.io`
-   - No redirect URI needed (the app uses Google Identity Services token flow).
-5. Copy the **Client ID** (ends with `.apps.googleusercontent.com`).
-   Paste it in the app → Settings → Google OAuth Client ID → Save.
-   ⚠️ The Client *Secret* is NOT used by this app. Do not paste it anywhere.
-6. In the app: Connect Google → sign in with **starkojunction@gmail.com**
-   (the Resilience Resonance channel account) → Drive Videos → Load videos.
+   Authorized JavaScript origin: `https://manojstars.github.io` (exactly, no path).
+5. Copy the **Client ID** → app Settings → **Drive API — OAuth Client ID** → Save.
+   In the app, top button **Connect Drive** → in the Google popup, pick the
+   **Manoj Stars** account.
+
+### 2B. YouTube setup (do it signed in as starkojunction@gmail.com — channel owner)
+1. console.cloud.google.com (switch account, top-right) → create project
+   `Muse Publisher YouTube`.
+2. APIs & Services → Library → enable **YouTube Data API v3**.
+3. OAuth consent screen → External → add **starkojunction@gmail.com** as Test user.
+4. Credentials → OAuth client ID → **Web application**.
+   Authorized JavaScript origin: `https://manojstars.github.io` (same as above).
+5. Copy the **Client ID** → app Settings → **YouTube API — OAuth Client ID** → Save.
+   In the app, top button **Connect YouTube** → in the Google popup, pick
+   **starkojunction@gmail.com**.
+
+⚠️ Client *Secrets* are never used by this app. Do not paste them anywhere.
+Alternative shortcut: share the Drive folder to starkojunction@gmail.com as
+Viewer and use a single account — but the split setup above is cleaner and
+keeps each account's permissions separate.
 
 YouTube quota note: free quota is ~10,000 units/day; one upload costs ~1,600,
 so ~6 uploads/day free. Plenty for 2 Shorts/day.
