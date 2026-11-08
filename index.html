@@ -68,7 +68,9 @@ progress{width:100%;height:10px}
   <span id="driveBadge" class="pill">Drive: not connected</span>
   <span id="ytBadge" class="pill">YouTube: not connected</span>
   <button class="btn small" onclick="driveSignIn()">Connect Drive</button>
+  <button class="btn small gold" onclick="vaultConnect('drive')" title="One-time permanent connection — works in every browser after this">Connect Drive Once ∞</button>
   <button class="btn small" onclick="youtubeSignIn()">Connect YouTube</button>
+  <button class="btn small gold" onclick="vaultConnect('youtube')" title="One-time permanent connection — works in every browser after this">Connect YouTube Once ∞</button>
   <button class="btn small secondary" onclick="showView('command')">🎙 Talk to Muse</button>
   <span id="cloudBadge" class="pill">Cloud: not logged in</span>
   <span id="userBadge" class="pill" style="display:none"></span>
@@ -218,7 +220,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v7.0 — Complete Cloud + Sheets validation + saved Google sessions (no repeat sign-ins) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v8.0 — Complete Cloud + Sheets validation + Google Vault (authenticate once, every browser) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -255,7 +257,7 @@ function init(){
  if(location.hostname.endsWith('github.io')){$('liveBadge').textContent='● Live on GitHub Pages: '+location.hostname;$('liveBadge').className='pill ok'}
  renderPlatformChecks();renderAll();
  chatMsg('muse','Namaste Manu 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
- log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));restoreSessions();initAuth();
+ log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));vaultReturnMsg();restoreSessions();initAuth();
 }
 function renderAll(){renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist()}
 function renderStats(){$('statVideos').textContent=S.videos.length;$('statQueue').textContent=S.queue.filter(q=>q.status!=='done').length;$('statPublished').textContent=S.history.length}
@@ -459,6 +461,33 @@ function toggleVoice(){
  recog.start();
 }
 
+
+/* ---------- GOOGLE VAULT (v8): authenticate once, works in every browser ---------- */
+const VAULT_URL='https://uvbwhnkvbzjdilqmivsy.supabase.co/functions/v1/google-vault';
+function vaultConnect(service){
+ if(!authUser){alert('Login to the Publisher first (top of the page) — the permanent Google connection is tied to your Publisher login.');return}
+ location.href=VAULT_URL+'?action=start&service='+service+'&uid='+encodeURIComponent(authUser.id);
+}
+async function vaultFetch(){
+ if(!supa||!authUser)return;
+ try{
+  const {data}=await supa.auth.getSession();const jwt=data&&data.session?data.session.access_token:'';if(!jwt)return;
+  for(const svc of ['drive','youtube']){
+   try{
+    const r=await fetch(VAULT_URL+'?action=token&service='+svc,{method:'POST',headers:{Authorization:'Bearer '+jwt}});
+    const j=await r.json().catch(()=>({}));
+    if(j&&j.connected&&j.access_token){
+     const resp={access_token:j.access_token,expires_in:j.expires_in||3500};
+     if(svc==='drive'){driveToken=j.access_token;googleToken=driveToken;storeTok('drive',resp);$('driveBadge').textContent='Drive: connected ∞';$('driveBadge').className='pill ok';log('Drive connected permanently via Vault (no more sign-ins).')}
+     else{ytToken=j.access_token;storeTok('yt',resp);$('ytBadge').textContent='YouTube: connected ∞';$('ytBadge').className='pill ok';log('YouTube connected permanently via Vault (no more sign-ins).')}
+    } else if(j&&j.error){log('Vault ('+svc+'): '+j.error)}
+   }catch(e){}
+  }
+  if(driveToken)loadDriveVideos();
+ }catch(e){}
+}
+function vaultReturnMsg(){try{const m=new URLSearchParams(location.search).get('vault');if(m){log('Google Vault: '+m);history.replaceState(null,'',location.pathname)}}catch(e){}}
+
 /* ---------- LOGIN (Supabase Auth, same project as CRM) + CLOUD SYNC ---------- */
 const CLOUD_LS='manu_publisher_cloud_v2_separate';localStorage.removeItem('manu_publisher_cloud_v1');let supa=null,authUser=null,_applyingCloud=false,_cloudTimer=null;
 let _fileCfg=null;
@@ -479,7 +508,7 @@ async function initAuth(fromSave=false){
  supa.auth.onAuthStateChange(async(_ev,session)=>{if(session&&session.user)await onLoggedIn(session.user)});
 }
 async function onLoggedIn(user){
- authUser=user;setCloudBadge('Cloud: connected');$('loginGate').classList.remove('show');const ub=$('userBadge');ub.style.display='inline-block';ub.textContent='👤 '+user.email;ub.className='pill ok';$('logoutBtn').style.display='inline-block';log('Logged in as '+user.email);
+ authUser=user;setCloudBadge('Cloud: connected');vaultFetch();$('loginGate').classList.remove('show');const ub=$('userBadge');ub.style.display='inline-block';ub.textContent='👤 '+user.email;ub.className='pill ok';$('logoutBtn').style.display='inline-block';log('Logged in as '+user.email);
  await cloudLoad();
 }
 async function doLogin(){if(!supa){await initAuth();if(!supa)return}loginMsg('Logging in…');const {error}=await supa.auth.signInWithPassword({email:$('lEmail').value.trim(),password:$('lPass').value});if(error)loginMsg('Login failed: '+error.message)}
