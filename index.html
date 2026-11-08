@@ -93,7 +93,7 @@ progress{width:100%;height:10px}
       <div class="card span3"><div class="label">Drive videos found</div><div class="stat" id="statVideos">0</div><div class="small">From your Drive folder</div></div>
       <div class="card span3"><div class="label">In publish queue</div><div class="stat" id="statQueue">0</div><div class="small">Waiting / processing</div></div>
       <div class="card span3"><div class="label">Published (this device)</div><div class="stat" id="statPublished">0</div><div class="small">Logged in History</div></div>
-      <div class="card span3"><div class="label">Channel</div><div style="font-weight:800;margin-top:8px">Resilience Resonance</div><div class="small">@ResilienceResonance<br>starkojunction@gmail.com</div></div>
+      <div class="card span3"><div class="label">Channel</div><div style="font-weight:800;margin-top:8px">Resilience Resonance</div><div class="small">@ResilienceResonance<br>krishnaformanu@gmail.com</div></div>
       <div class="card span8"><h3 style="margin-top:0">Quick start — 3 steps</h3>
         <ol>
           <li><b>Settings &amp; Deploy:</b> paste your Google OAuth Client ID (free, 5 min — steps in SETUP.md), save. Your Drive folder is already pre-filled.</li>
@@ -192,7 +192,7 @@ progress{width:100%;height:10px}
     <div class="grid">
       <div class="card span6"><h3 style="margin-top:0">Settings (synced to your private cloud)</h3>
         <label>Drive API — OAuth Client ID (create/sign-in under Manoj Stars account — Drive owner)</label><input id="sDriveClient" placeholder="Drive account: xxxx.apps.googleusercontent.com">
-        <label>YouTube API — OAuth Client ID (create/sign-in under starkojunction@gmail.com — channel owner)</label><input id="sYtClient" placeholder="YouTube account: xxxx.apps.googleusercontent.com">
+        <label>YouTube API — OAuth Client ID (create/sign-in under krishnaformanu@gmail.com — channel owner)</label><input id="sYtClient" placeholder="YouTube account: xxxx.apps.googleusercontent.com">
         <div class="small">Two separate sign-ins are supported: Drive videos are read with the Drive account token, YouTube uploads use the YouTube account token. You may also use the same Client ID in both boxes if one project is shared — the accounts you pick at sign-in are what matter.</div>
         <label>Default Drive Folder ID</label><input id="sFolder" placeholder="Folder ID">
         <label>Google Sheets Tracker — spreadsheet link or ID (your “youtube videos” sheet)</label><input id="sSheet" placeholder="Spreadsheet link or ID">
@@ -218,7 +218,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v6.0 — Complete Cloud + Google Sheets tracker validation (Published YES) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v7.0 — Complete Cloud + Sheets validation + saved Google sessions (no repeat sign-ins) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -235,6 +235,11 @@ const PLATFORMS=[
 ];
 let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,sheet:DEFAULT_SHEET,sheetTab:'',fbPage:'',igId:'',metaToken:'',webhook:'',channel:'Resilience Resonance'},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
 let googleToken='',driveToken='',ytToken='',tokenClient=null,recog=null,listening=false;
+const TK='krishna_publisher_tokens_v7';
+function storeTok(kind,resp){try{const all=JSON.parse(localStorage.getItem(TK)||'{}');all[kind]={t:resp.access_token,exp:Date.now()+((resp.expires_in||3500)-120)*1000};localStorage.setItem(TK,JSON.stringify(all))}catch(e){}}
+function readTok(kind){try{const all=JSON.parse(localStorage.getItem(TK)||'{}');const x=all[kind];return (x&&x.exp>Date.now())?x.t:''}catch(e){return ''}}
+function silentRefresh(kind){const isD=kind==='drive';const cid=isD?(S.settings.driveClient||S.settings.googleClient):(S.settings.youtubeClient||S.settings.googleClient);if(!cid||!window.google||!google.accounts)return;const scope=isD?'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets':'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly';makeTokenClient(cid,scope,r=>{if(r.error||!r.access_token)return;if(isD){driveToken=r.access_token;googleToken=driveToken;storeTok('drive',r);$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive session restored automatically — no sign-in needed.')}else{ytToken=r.access_token;storeTok('yt',r);$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube session restored automatically — no sign-in needed.')}}).requestAccessToken({prompt:''});}
+function restoreSessions(){const d=readTok('drive'),y=readTok('yt');if(d){driveToken=d;googleToken=d;$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive session restored (saved sign-in).')}if(y){ytToken=y;$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube session restored (saved sign-in).')}setTimeout(()=>{if(!driveToken&&(S.settings.driveClient||S.settings.googleClient))silentRefresh('drive');if(!ytToken&&(S.settings.youtubeClient||S.settings.googleClient))silentRefresh('yt')},2500);}
 function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
 function save(){localStorage.setItem(LS,JSON.stringify(S));scheduleCloudSave()}
 function $(id){return document.getElementById(id)}
@@ -250,21 +255,21 @@ function init(){
  if(location.hostname.endsWith('github.io')){$('liveBadge').textContent='● Live on GitHub Pages: '+location.hostname;$('liveBadge').className='pill ok'}
  renderPlatformChecks();renderAll();
  chatMsg('muse','Namaste Manu 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
- log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));initAuth();
+ log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));restoreSessions();initAuth();
 }
 function renderAll(){renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist()}
 function renderStats(){$('statVideos').textContent=S.videos.length;$('statQueue').textContent=S.queue.filter(q=>q.status!=='done').length;$('statPublished').textContent=S.history.length}
 function renderReadiness(){
  const rows=[
   ['Google Drive (Manoj Stars a/c)',!!(S.settings.driveClient||S.settings.googleClient),'Add Drive Client ID in Settings'],
-  ['YouTube (starkojunction a/c)',!!(S.settings.youtubeClient||S.settings.googleClient),'Add YouTube Client ID in Settings'],
+  ['YouTube (krishnaformanu a/c)',!!(S.settings.youtubeClient||S.settings.googleClient),'Add YouTube Client ID in Settings'],
   ['Meta (FB + Instagram)',!!(S.settings.fbPage&&S.settings.metaToken),'Add Page ID + token in Settings'],
   ['Muse Bridge (X/TikTok/LinkedIn)',!!S.settings.webhook,'Add webhook URL in Settings, or use Copy Job'],
   ['Demo mode',true,'Works with no keys for a test run']];
  $('readiness').innerHTML=rows.map(r=>'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:7px 0"><span>'+esc(r[0])+'</span><span class="badge '+(r[1]?'gold':'')+'">'+(r[1]?'Ready':'Not set')+'</span></div>'+(r[1]?'':'<div class="small">'+esc(r[2])+'</div>')).join('');
 }
 function renderChecklist(){
- const items=[['Two Google setups: Drive API (Manoj Stars) + YouTube Data API v3 (starkojunction)',!!(S.settings.driveClient&&S.settings.youtubeClient)],['OAuth origin added for your github.io URL',false],['Meta app + Page token (Pages/Instagram permissions)',!!S.settings.metaToken],['Muse Bridge webhook created in Make/n8n (optional)',!!S.settings.webhook],['Repo Pages source set to main / root',location.hostname.endsWith('github.io')]];
+ const items=[['Two Google setups: Drive API (Manoj Stars) + YouTube Data API v3 (krishnaformanu)',!!(S.settings.driveClient&&S.settings.youtubeClient)],['OAuth origin added for your github.io URL',false],['Meta app + Page token (Pages/Instagram permissions)',!!S.settings.metaToken],['Muse Bridge webhook created in Make/n8n (optional)',!!S.settings.webhook],['Repo Pages source set to main / root',location.hostname.endsWith('github.io')]];
  $('checklist').innerHTML=items.map(i=>'<div class="check"><input type="checkbox" '+(i[1]?'checked':'')+' disabled><span>'+esc(i[0])+'</span></div>').join('');
 }
 function renderPlatformChecks(){
@@ -290,13 +295,13 @@ function driveSignIn(){
  const cid=S.settings.driveClient||S.settings.googleClient;
  if(!cid){alert('First add the Drive OAuth Client ID in Settings (created under the Manoj Stars account). See SETUP.md step 2A.');showView('settings');return}
  if(!window.google||!google.accounts){alert('Google sign-in library is still loading — wait 3 seconds and try again.');return}
- makeTokenClient(cid,'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets',r=>{if(r.error){log('Drive sign-in error: '+r.error);alert('Drive sign-in failed: '+r.error);return}driveToken=r.access_token;googleToken=driveToken;$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive connected (sign in with the Manoj Stars account in the Google popup).');loadDriveVideos();}).requestAccessToken({prompt:'consent',hint:''});
+ makeTokenClient(cid,'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets',r=>{if(r.error){log('Drive sign-in error: '+r.error);alert('Drive sign-in failed: '+r.error);return}driveToken=r.access_token;googleToken=driveToken;storeTok('drive',r);$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive connected (sign in with the Manoj Stars account in the Google popup).');loadDriveVideos();}).requestAccessToken({prompt:''});
 }
 function youtubeSignIn(){
  const cid=S.settings.youtubeClient||S.settings.googleClient;
- if(!cid){alert('First add the YouTube OAuth Client ID in Settings (created under starkojunction@gmail.com). See SETUP.md step 2B.');showView('settings');return}
+ if(!cid){alert('First add the YouTube OAuth Client ID in Settings (created under krishnaformanu@gmail.com). See SETUP.md step 2B.');showView('settings');return}
  if(!window.google||!google.accounts){alert('Google sign-in library is still loading — wait 3 seconds and try again.');return}
- makeTokenClient(cid,'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly',r=>{if(r.error){log('YouTube sign-in error: '+r.error);alert('YouTube sign-in failed: '+r.error);return}ytToken=r.access_token;$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube connected (sign in with starkojunction@gmail.com in the Google popup).');}).requestAccessToken({prompt:'consent'});
+ makeTokenClient(cid,'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly',r=>{if(r.error){log('YouTube sign-in error: '+r.error);alert('YouTube sign-in failed: '+r.error);return}ytToken=r.access_token;storeTok('yt',r);$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube connected (sign in with krishnaformanu@gmail.com in the Google popup).');}).requestAccessToken({prompt:''});
 }
 function googleSignIn(){driveSignIn()}
 async function loadDriveVideos(){
@@ -400,7 +405,7 @@ async function publishSelected(fromQueue=false){
  try{
   for(const p of job.platforms){
    try{
-    if(p==='youtube'){if(job.video.demo)throw new Error('Demo item — connect Google + load the real Drive file to upload');if(!ytToken)throw new Error('Connect YouTube first (top button, starkojunction account)');if(!blob)blob=await downloadDriveBlob(job.video.driveId);const url=await uploadYouTube(job,blob);recordHistory('YouTube','Published',url);await markSheetPublished(job,url);results.push('✅ YouTube: '+url)}
+    if(p==='youtube'){if(job.video.demo)throw new Error('Demo item — connect Google + load the real Drive file to upload');if(!ytToken)throw new Error('Connect YouTube first (top button, krishnaformanu account)');if(!blob)blob=await downloadDriveBlob(job.video.driveId);const url=await uploadYouTube(job,blob);recordHistory('YouTube','Published',url);await markSheetPublished(job,url);results.push('✅ YouTube: '+url)}
     else if(p==='instagram'){const url=await uploadInstagram(job);recordHistory('Instagram','Published',url);results.push('✅ Instagram: '+url)}
     else if(p==='facebook'){await uploadFacebook(job);results.push('⚠️ Facebook: started, finish via bridge (see log)')}
     else{ // bridge platforms
