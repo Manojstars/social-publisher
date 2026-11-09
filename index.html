@@ -95,7 +95,7 @@ progress{width:100%;height:10px}
       <div class="card span3"><div class="label">Drive videos found</div><div class="stat" id="statVideos">0</div><div class="small">From your Drive folder</div></div>
       <div class="card span3"><div class="label">In publish queue</div><div class="stat" id="statQueue">0</div><div class="small">Waiting / processing</div></div>
       <div class="card span3"><div class="label">Published (this device)</div><div class="stat" id="statPublished">0</div><div class="small">Logged in History</div></div>
-      <div class="card span3"><div class="label">Channel</div><div style="font-weight:800;margin-top:8px">Resilience Resonance</div><div class="small">@ResilienceResonance<br>krishnaformanu@gmail.com</div></div>
+      <div class="card span3"><div class="label">Channel</div><div style="font-weight:800;margin-top:8px">Krish</div><div class="small">@Krish-Ram-888<br>krishnaformanu@gmail.com</div></div>
       <div class="card span8"><h3 style="margin-top:0">Quick start — 3 steps</h3>
         <ol>
           <li><b>Settings &amp; Deploy:</b> paste your Google OAuth Client ID (free, 5 min — steps in SETUP.md), save. Your Drive folder is already pre-filled.</li>
@@ -220,7 +220,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v8.0 — Complete Cloud + Sheets validation + Google Vault (authenticate once, every browser) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v9.0 — Complete Cloud + Google Vault + new 7-column tracker (Title/Caption/Tags/Drive Link/Published/YouTube Link) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -329,8 +329,10 @@ function renderSelected(){const v=selectedVideo();if(v){$('selectedBox').innerHT
 
 /* ---------- COMPOSE HELPERS ---------- */
 function suggestCopy(announce=true){const v=selectedVideo();const base=(v?(v.title||v.name.replace(/\.[^.]+$/,'')):'Stoic Thought').trim();
+ const srow=v?sheetStatusFor(v):null;const sr=srow&&srow.row?srow.row:null;
+ if(sr&&(sr.caption||sr.tags)){if(!$('fTitle').value||announce)$('fTitle').value=sr.title||base;if(!$('fCaption').value||announce)$('fCaption').value=sr.caption;if(!$('fTags').value||announce)$('fTags').value=sr.tags;if(announce)log('Title/caption/tags loaded from the tracker sheet (Krish captions).');return}
  if(!$('fTitle').value||announce)$('fTitle').value=base;
- if(!$('fCaption').value||announce)$('fCaption').value=base+'\n\nA Roman Stoic thought for today — pause, breathe, and apply it before the day decides for you.\n\nFollow @ResilienceResonance for 2 Stoic Shorts daily.';
+ if(!$('fCaption').value||announce)$('fCaption').value=base+'\n\nA Roman Stoic thought for today — pause, breathe, and apply it before the day decides for you.\n\nFollow Krish for 2 Stoic Shorts daily.';
  if(!$('fTags').value||announce)$('fTags').value='stoicism, marcusaurelius, seneca, epictetus, philosophy, mindset, shorts, resilience';
  if(announce)log('Suggested title/caption/tags filled. Edit freely before publishing.')}
 function currentJob(){const v=selectedVideo();return{app:'Krishna Muse Publisher',version:1,createdAt:new Date().toISOString(),video:v?{driveId:v.demo?null:v.id,name:v.name,driveLink:v.link||('https://drive.google.com/file/d/'+v.id+'/view'),publicUrl:v.demo?null:('https://drive.google.com/uc?export=download&id='+v.id)}:null,title:$('fTitle').value.trim(),caption:$('fCaption').value.trim(),tags:$('fTags').value.split(',').map(x=>x.trim()).filter(Boolean),privacy:$('fPrivacy').value,madeForKids:$('fKids').value==='true',schedule:$('fSchedule').value||null,platforms:PLATFORMS.filter(p=>S.platforms[p.id]).map(p=>p.id),channel:S.settings.channel}}
@@ -342,7 +344,7 @@ async function processQueue(){if(!S.queue.length){alert('Queue is empty.');retur
 function applyJobToForm(q){S.selectedId=q.video.driveId||S.selectedId;$('fTitle').value=q.title;$('fCaption').value=q.caption;$('fTags').value=q.tags.join(', ')}
 function renderHistory(){$('historyList').innerHTML=S.history.length?'<table><tr><th>When</th><th>Title</th><th>Platform</th><th>Result / Link</th></tr>'+S.history.slice().reverse().map(h=>'<tr><td>'+esc(h.when)+'</td><td>'+esc(h.title)+'</td><td>'+esc(h.platform)+'</td><td>'+(h.url?'<a href="'+esc(h.url)+'" target="_blank" rel="noopener">'+esc(h.result)+'</a>':esc(h.result))+'</td></tr>').join('')+'</table>':'<p class="small">Nothing published from this device yet.</p>'}
 function recordHistory(platform,result,url){S.history.push({when:new Date().toLocaleString(),title:$('fTitle').value.trim(),platform,result,url:url||''});save();renderStats();renderHistory()}
-function exportCSV(){const rows=[['SL NO','Title','Link','Published']];S.history.forEach((h,i)=>rows.push([i+1,h.title,h.url||'',h.platform+' — '+h.result+' ('+h.when+')']));download('publisher-history.csv',rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');log('CSV exported — columns match your “youtube videos” tracker sheet.')}
+function exportCSV(){const rows=[['SL NO','Title','Caption','Tags','Drive Link','Published','YouTube Link']];S.history.forEach((h,i)=>rows.push([i+1,h.title,'','', '',h.platform+' — '+h.result+' ('+h.when+')',h.url||'']));download('publisher-history.csv',rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');log('CSV exported — columns match your “youtube videos” tracker sheet.')}
 
 /* ---------- GOOGLE SHEETS TRACKER ---------- */
 function sheetIdFrom(v){if(!v)return DEFAULT_SHEET;const m=String(v).match(/\/d\/([-\w]{20,})/);if(m)return m[1];const m2=String(v).match(/^([-\w]{20,})$/);return m2?m2[1]:String(v).trim()}
@@ -350,15 +352,15 @@ function normTitle(s){return String(s||'').toLowerCase().replace(/\.[a-z0-9]+$/,
 function sheetRange(a1){const tab=(S.settings.sheetTab||'').trim();return (tab?("'"+tab.replace(/'/g,"''")+"'!"):'')+a1}
 async function sheetsFetch(path,opts){const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheetIdFrom(S.settings.sheet)+path,Object.assign({headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'}},opts||{}));const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error((d.error&&d.error.message)||('Sheets API '+r.status));return d}
 async function loadSheetRows(silent){if(!driveToken){if(!silent)alert('Connect Drive first — the tracker sheet is read with your Drive sign-in (it now also asks for Sheets permission).');return null}
- try{const d=await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A1:D1000')));const vals=d.values||[];S.sheetRows=vals.map((r,i)=>({row:i+1,sl:r[0]||'',title:r[1]||'',link:r[2]||'',published:r[3]||''})).filter(x=>x.row>1&&(x.title||x.link));save();renderVideos();log('Sheet validated: '+S.sheetRows.length+' row(s) in tracker, '+S.sheetRows.filter(x=>String(x.published).trim().toUpperCase()==='YES').length+' marked Published YES.');return S.sheetRows}
+ try{const d=await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A1:G1000')));const vals=d.values||[];S.sheetRows=vals.map((r,i)=>({row:i+1,sl:r[0]||'',title:r[1]||'',caption:r[2]||'',tags:r[3]||'',driveLink:r[4]||'',published:r[5]||'',ytLink:r[6]||''})).filter(x=>x.row>1&&(x.title||x.driveLink));save();renderVideos();log('Sheet validated: '+S.sheetRows.length+' row(s) in tracker, '+S.sheetRows.filter(x=>String(x.published).trim().toUpperCase()==='YES').length+' marked Published YES.');return S.sheetRows}
  catch(e){log('Sheet validation failed: '+e.message);if(!silent)alert('Could not read the tracker sheet:\n'+e.message+'\n\nCheck: 1) Google Sheets API is enabled in the Drive Google Cloud project, 2) you Reconnected Drive after the v6 update (new Sheets permission), 3) the sheet belongs to / is shared with the account you signed in with.');return null}}
-function sheetStatusFor(v){const rows=S.sheetRows||[];if(!rows.length)return null;const nt=normTitle(v.title||v.name);const row=rows.find(r=>normTitle(r.title)===nt)||rows.find(r=>r.link&&v.link&&r.link===v.link);if(!row)return{state:'missing',label:'Sheet: not added'};if(String(row.published).trim().toUpperCase()==='YES')return{state:'yes',label:'Sheet: Published YES',row};return{state:'added',label:'Sheet: added, not published',row}}
+function sheetStatusFor(v){const rows=S.sheetRows||[];if(!rows.length)return null;const nt=normTitle(v.title||v.name);const row=rows.find(r=>normTitle(r.title)===nt)||rows.find(r=>r.driveLink&&v.link&&r.driveLink===v.link);if(!row)return{state:'missing',label:'Sheet: not added'};if(String(row.published).trim().toUpperCase()==='YES')return{state:'yes',label:'Sheet: Published YES',row};return{state:'added',label:'Sheet: added, not published',row}}
 function sheetBadgeHtml(v){const st=sheetStatusFor(v);if(!st)return'';return '<span class="badge '+(st.state==='yes'?'gold':'')+'">'+esc(st.label)+'</span>'}
 async function validateBeforeUpload(job){if(!sheetIdFrom(S.settings.sheet))return true;const rows=await loadSheetRows(true);if(!rows){log('Sheet validation could not run (Drive not connected) — upload not blocked. Connect Drive to enable duplicate checks.');return true}const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink});if(st&&st.state==='yes'){alert('Already uploaded — the tracker sheet has Published = YES for \u201C'+(job.title||job.video.name)+'\u201D. Upload skipped to avoid a duplicate.');log('Upload blocked by sheet validation: already Published YES.');return false}log('Sheet check before upload: '+(st?st.label:'not added — a new row will be created after upload')+'.');return true}
 async function markSheetPublished(job,url){if(!driveToken||!sheetIdFrom(S.settings.sheet)){log('Sheet not updated (Drive not connected).');return}
  try{const rows=(S.sheetRows&&S.sheetRows.length)?S.sheetRows:((await loadSheetRows(true))||[]);const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink});const title=job.title||job.video.name;
-  if(st&&st.row){const r=st.row;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A'+r.row+':D'+r.row))+'?valueInputOption=USER_ENTERED',{method:'PUT',body:JSON.stringify({values:[[r.sl||(r.row-1),title,url,'YES']]})});log('Sheet updated: row '+r.row+' → Published YES with the YouTube link.')}
-  else{const nextSl=rows.reduce((mx,x)=>Math.max(mx,parseInt(x.sl)||0),0)+1;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A:D'))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS',{method:'POST',body:JSON.stringify({values:[[nextSl,title,url,'YES']]})});log('Sheet: new row '+nextSl+' added → Published YES.')}
+  if(st&&st.row){const r=st.row;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('F'+r.row+':G'+r.row))+'?valueInputOption=USER_ENTERED',{method:'PUT',body:JSON.stringify({values:[['YES',url]]})});log('Sheet updated: row '+r.row+' → Published YES with the YouTube link.')}
+  else{const nextSl=rows.reduce((mx,x)=>Math.max(mx,parseInt(x.sl)||0),0)+1;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A:G'))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS',{method:'POST',body:JSON.stringify({values:[[nextSl,title,job.caption||'',(job.tags||[]).join(', '),job.video.driveLink||'','YES',url]]})});log('Sheet: new row '+nextSl+' added → Published YES.')}
   await loadSheetRows(true);
  }catch(e){log('Sheet mark-YES failed: '+e.message+' — the upload itself succeeded; please update the sheet manually.')}}
 
