@@ -220,7 +220,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v9.1 — Complete Cloud + Google Vault + new 7-column tracker (Title/Caption/Tags/Drive Link/Published/YouTube Link) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v9.2 — Complete Cloud + Google Vault + new 7-column tracker (Title/Caption/Tags/Drive Link/Published/YouTube Link) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -402,7 +402,7 @@ async function publishSelected(fromQueue=false){
  const job=currentJob();
  if(!job.video){alert('Select a video first.');return}
  if(!job.platforms.length){alert('Tick at least one platform.');return}
- if(!fromQueue&&!confirm('Publish “'+(job.title||job.video.name)+'” now to: '+job.platforms.join(', ')+'?'))return;
+ if(!fromQueue){if(!window._pubArm){window._pubArm=true;log('Publish clicked for “'+(job.title||job.video.name)+'” → '+job.platforms.join(', ')+'. Click Publish once more within 10 seconds to confirm.');const b=$('publishBtn');b.textContent='⚠️ Click again to confirm publish';setTimeout(()=>{window._pubArm=false;b.textContent='🚀 Publish now'},10000);return}window._pubArm=false;$('publishBtn').textContent='🚀 Publish now';log('Publish confirmed — starting upload…')}
  if(job.platforms.includes('youtube')){const okSheet=await validateBeforeUpload(job);if(!okSheet)return}
  $('publishBtn').disabled=true;$('progress').style.display='block';$('progress').value=15;$('publishResult').innerHTML='';
  const results=[];let blob=null;
