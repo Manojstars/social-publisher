@@ -220,7 +220,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v9.0 — Complete Cloud + Google Vault + new 7-column tracker (Title/Caption/Tags/Drive Link/Published/YouTube Link) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v9.1 — Complete Cloud + Google Vault + new 7-column tracker (Title/Caption/Tags/Drive Link/Published/YouTube Link) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
 </div>
 
 <script>
@@ -330,7 +330,7 @@ function renderSelected(){const v=selectedVideo();if(v){$('selectedBox').innerHT
 /* ---------- COMPOSE HELPERS ---------- */
 function suggestCopy(announce=true){const v=selectedVideo();const base=(v?(v.title||v.name.replace(/\.[^.]+$/,'')):'Stoic Thought').trim();
  const srow=v?sheetStatusFor(v):null;const sr=srow&&srow.row?srow.row:null;
- if(sr&&(sr.caption||sr.tags)){if(!$('fTitle').value||announce)$('fTitle').value=sr.title||base;if(!$('fCaption').value||announce)$('fCaption').value=sr.caption;if(!$('fTags').value||announce)$('fTags').value=sr.tags;if(announce)log('Title/caption/tags loaded from the tracker sheet (Krish captions).');return}
+ if(sr&&(sr.caption||sr.tags)){$('fTitle').value=sr.title||base;$('fCaption').value=sr.caption;$('fTags').value=sr.tags;if(announce)log('Title/caption/tags loaded from the tracker sheet (Krish captions).');return}
  if(!$('fTitle').value||announce)$('fTitle').value=base;
  if(!$('fCaption').value||announce)$('fCaption').value=base+'\n\nA Roman Stoic thought for today — pause, breathe, and apply it before the day decides for you.\n\nFollow Krish for 2 Stoic Shorts daily.';
  if(!$('fTags').value||announce)$('fTags').value='stoicism, marcusaurelius, seneca, epictetus, philosophy, mindset, shorts, resilience';
