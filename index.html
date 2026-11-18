@@ -18,6 +18,7 @@ a{color:var(--gold)}button,input,select,textarea{font:inherit}
 .btn:hover{background:var(--gold2)}.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.btn.danger{background:#7f1d1d;color:#fff}.btn.small{padding:7px 10px;font-size:13px}.btn:disabled{opacity:.5;cursor:not-allowed}
 .wrap{max-width:1220px;margin:0 auto;padding:18px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{padding:9px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}.tab.active{background:var(--gold);color:#111827;font-weight:800;border-color:var(--gold)}
+.secTab{background:var(--panel2);color:var(--text);border:1px solid var(--line)}.secTab.active{background:var(--gold);color:#111827;font-weight:800;border-color:var(--gold)}
 .view{display:none}.view.active{display:block}
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}.span3{grid-column:span 3}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
 @media(max-width:900px){.span3,.span4,.span6,.span8{grid-column:span 12}}
@@ -89,10 +90,17 @@ progress{width:100%;height:10px}
     <button class="tab" data-view="settings" onclick="showView('settings')">Settings &amp; Deploy</button>
   </nav>
 
+  <!-- SECTION SWITCHER (v11.1) -->
+  <div class="row" style="gap:10px;margin:2px 0 14px">
+    <button class="btn secTab active" data-section="shorts" style="flex:1;padding:16px;font-size:17px" onclick="switchSection('shorts')">⚡ Shorts</button>
+    <button class="btn secTab" data-section="longform" style="flex:1;padding:16px;font-size:17px" onclick="switchSection('longform')">🎬 Long Form</button>
+  </div>
+  <div class="small" style="margin:-6px 0 12px">Two separate sections: each has its <b>own Drive folder</b>, its <b>own loaded video list</b> and its <b>own tracker sheet</b>. Switching sections swaps all three.</div>
+
   <!-- DASHBOARD -->
   <section id="view-dashboard" class="view active">
     <div class="grid">
-      <div class="card span3"><div class="label">Drive videos found</div><div class="stat" id="statVideos">0</div><div class="small">From your Drive folder</div></div>
+      <div class="card span3"><div class="label" id="statVideosLabel">Drive videos found — Shorts</div><div class="stat" id="statVideos">0</div><div class="small" id="statVideosSub">From your Shorts Drive folder</div></div>
       <div class="card span3"><div class="label">In publish queue</div><div class="stat" id="statQueue">0</div><div class="small">Waiting / processing</div></div>
       <div class="card span3"><div class="label">Published (this device)</div><div class="stat" id="statPublished">0</div><div class="small">Logged in History</div></div>
       <div class="card span3"><div class="label">Channel</div><div id="dashChannel" style="font-weight:800;margin-top:8px">Your channel</div><div class="small" id="dashChannelSub">Add your channel name in Settings</div></div>
@@ -104,7 +112,7 @@ progress{width:100%;height:10px}
         </ol>
         <div class="row"><button class="btn" onclick="showView('drive')">Load my Drive videos</button><button class="btn secondary" onclick="loadDemo()">Try demo mode (no keys)</button><button class="btn secondary" onclick="showView('settings')">Open Settings</button></div>
       </div>
-      <div class="card span12"><h3 style="margin-top:0">📅 Bulk Schedule — 10 Shorts/day (YouTube scheduled publishing)</h3>
+      <div class="card span12" id="schedCard"><h3 style="margin-top:0">📅 Bulk Schedule — 10 Shorts/day (YouTube scheduled publishing) — ⚡ Shorts section only</h3>
         <div class="small">Uploads every unpublished tracker row (in SL order) to YouTube as <b>private with a scheduled release</b>: <b>10 per day</b> at 7:00, 8:30, 10:00, 11:30 AM, 1:00, 2:30, 4:00, 5:30, 7:00, 8:30 PM <b>US Eastern</b>, starting today. YouTube itself releases each video at its slot — no browser needs to stay open. Titles/captions/tags come from the tracker sheet exactly as written. Each scheduled row is marked Published YES with its link. If YouTube's daily API quota is reached, the run stops cleanly — press the button again after the quota resets (13:30 IST) and it resumes where it left off.</div>
         <div class="row" style="margin-top:10px"><button class="btn" id="schedBtn" onclick="scheduleAll()">📅 Schedule all unpublished (10/day)</button><button class="btn small secondary" onclick="window._schedStop=true;log('Bulk schedule: stop requested — will halt after the current upload.')">Stop after current</button></div>
         <div id="schedStatus" class="small" style="margin-top:8px"></div>
@@ -118,9 +126,9 @@ progress{width:100%;height:10px}
   <section id="view-drive" class="view">
     <div class="grid">
       <div class="card span4">
-        <h3 style="margin-top:0">Google Drive source</h3>
-        <label>Drive folder ID or link</label><input id="folderInput" placeholder="Folder ID">
-        <div class="small">Paste any of your own Drive folder links — the ID is extracted automatically. Set it once in Settings and it syncs with your login.</div>
+        <h3 style="margin-top:0" id="driveCardTitle">⚡ Shorts — Drive source</h3>
+        <label>Drive folder ID or link</label><input id="folderInput" placeholder="Shorts Drive folder ID or link">
+        <div class="small">Paste any of your own Drive folder links — the ID is extracted automatically. Set it once in Settings and it syncs with your login. Each section (⚡ Shorts / 🎬 Long Form) has its OWN folder, video list and tracker sheet — switch sections at the top of the page.</div>
         <div class="row" style="margin-top:12px"><button class="btn" onclick="loadDriveVideos()">Load videos</button><button class="btn secondary" onclick="loadSheetRows()">Validate with Google Sheet</button><button class="btn secondary" onclick="loadDemo()">Demo videos</button></div>
         <label style="margin-top:14px;display:block">Search</label><input id="driveSearch" placeholder="Search title…" oninput="renderVideos()">
         <div class="small">Supported: mp4, mov, webm, m4v. Videos are downloaded in your browser only when publishing to YouTube; for Instagram the Drive public link is used.</div>
@@ -144,6 +152,7 @@ progress{width:100%;height:10px}
           <div class="span6"><label>Made for kids?</label><select id="fKids"><option value="false">No</option><option value="true">Yes</option></select></div>
         </div>
         <label>Schedule (optional, for Muse Bridge / queue reminder)</label><input id="fSchedule" type="datetime-local">
+        <div class="small" id="shortsNote" style="margin:8px 0">⚡ <b>Shorts section:</b> #Shorts is added to the YouTube title automatically when you publish. (In the 🎬 Long Form section, no tag is added.)</div>
         <div class="row"><button class="btn secondary" onclick="suggestCopy()">✨ Suggest title / caption / tags</button><button class="btn secondary" onclick="addToQueue()">Add to queue</button></div>
       </div>
       <div class="card span6">
@@ -238,9 +247,14 @@ progress{width:100%;height:10px}
         <div class="row"><button class="btn small" onclick="saveVaultCred('linkedin')">Save to my vault</button><button class="btn small danger" onclick="deleteVaultCred('linkedin')">Delete</button><span class="small" id="vStatus_linkedin">Not saved</span></div>
 
         <h4>Your content settings (synced, non-secret)</h4>
-        <label>Default Drive Folder ID</label><input id="sFolder" placeholder="Your Drive folder ID or link">
-        <label>Google Sheets Tracker — spreadsheet link or ID (your own tracker sheet)</label><input id="sSheet" placeholder="Spreadsheet link or ID">
-        <label>Sheet tab name (blank = first tab)</label><input id="sSheetTab" placeholder="Blank = first tab">
+        <h4>⚡ Shorts section</h4>
+        <label>Shorts Drive Folder ID</label><input id="sFolderShorts" placeholder="Shorts Drive folder ID or link">
+        <label>Shorts Tracker Sheet — spreadsheet link or ID (the Shorts tracker)</label><input id="sSheetShorts" placeholder="Shorts tracker spreadsheet link or ID">
+        <label>Shorts Sheet Tab (blank = first tab)</label><input id="sSheetTabShorts" placeholder="Blank = first tab">
+        <h4>🎬 Long Form section</h4>
+        <label>Long Form Drive Folder ID</label><input id="sFolderLong" placeholder="Long Form Drive folder ID or link">
+        <label>Long Form Tracker Sheet — spreadsheet link or ID (the Long Form tracker)</label><input id="sSheetLong" placeholder="Long Form tracker spreadsheet link or ID">
+        <label>Long Form Sheet Tab (blank = first tab)</label><input id="sSheetTabLong" placeholder="Blank = first tab">
         <div class="small">Tracker columns: A = SL NO, B = Title, C = Caption, D = Tags, E = Drive Link, F = Published, G = YouTube Link. Before every upload the app checks this sheet and blocks duplicates (Published = YES). After a confirmed upload it writes the YouTube link and sets Published = YES automatically. Leave blank if you do not use a tracker sheet.</div>
         <label>Muse Bridge Webhook URL (Make / n8n / Zapier — for X, TikTok, LinkedIn + Muse notify; a non-secret URL)</label><input id="sWebhook" placeholder="https://hook…/…">
         <label>Your name / channel label</label><input id="sChannel" placeholder="Your channel name">
@@ -259,7 +273,7 @@ progress{width:100%;height:10px}
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v11.0 — Global Edition • Complete Cloud + Per-User Credentials Vault + 7-column tracker + Bulk Schedule (10 Shorts/day, YouTube scheduled publishing) • Open for everyone — bring your own API keys • Static &amp; free on GitHub Pages • No secrets in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v11.1 — Global Edition + Shorts / Long Form sections • Complete Cloud + Per-User Credentials Vault + 7-column tracker + Bulk Schedule (10 Shorts/day, YouTube scheduled publishing) • Open for everyone — bring your own API keys • Static &amp; free on GitHub Pages • No secrets in code</p>
 </div>
 
 <script>
@@ -274,7 +288,39 @@ const PLATFORMS=[
  {id:'tiktok',name:'TikTok',icon:'🎵',mode:'bridge'},
  {id:'linkedin',name:'LinkedIn',icon:'💼',mode:'bridge'}
 ];
-let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,sheet:DEFAULT_SHEET,sheetTab:'',fbPage:'',igId:'',webhook:'',channel:''},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
+let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,sheet:DEFAULT_SHEET,sheetTab:'',fbPage:'',igId:'',webhook:'',channel:''},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false},section:'shorts',sections:{shorts:{folder:'',sheet:'',sheetTab:'',videos:[],selectedId:'',sheetRows:[]},longform:{folder:'',sheet:'',sheetTab:'',videos:[],selectedId:'',sheetRows:[]}}};
+/* ---------- SECTIONS (v11.1): Shorts vs Long Form — separate folder, videos, tracker sheet ---------- */
+function blankSection(){return{folder:'',sheet:'',sheetTab:'',videos:[],selectedId:'',sheetRows:[]}}
+function sec(){if(!S.sections)S.sections={shorts:blankSection(),longform:blankSection()};if(!S.sections.shorts)S.sections.shorts=blankSection();if(!S.sections.longform)S.sections.longform=blankSection();return S.sections[S.section==='longform'?'longform':'shorts']}
+function secOf(sk){if(sk&&(sk==='shorts'||sk==='longform')){if(!S.sections)S.sections={shorts:blankSection(),longform:blankSection()};if(!S.sections[sk])S.sections[sk]=blankSection();return S.sections[sk]}return sec()}
+function secName(){return S.section==='longform'?'Long Form':'Shorts'}
+function secIcon(){return S.section==='longform'?'🎬':'⚡'}
+function mirrorSection(){const x=sec();S.videos=x.videos;S.selectedId=x.selectedId;S.sheetRows=x.sheetRows;if(S.settings){S.settings.folder=x.folder;S.settings.sheet=x.sheet;S.settings.sheetTab=x.sheetTab}}
+function syncLegacyToSection(){if(!S.sections)return;const x=sec();if(Array.isArray(S.videos)&&S.videos!==x.videos)x.videos=S.videos;if(typeof S.selectedId==='string')x.selectedId=S.selectedId;if(Array.isArray(S.sheetRows)&&S.sheetRows!==x.sheetRows)x.sheetRows=S.sheetRows;mirrorSection()}
+function migrateSections(){
+ if(!S.section)S.section='shorts';
+ if(!S.sections){
+  S.sections={shorts:blankSection(),longform:blankSection()};
+  const sh=S.sections.shorts;
+  sh.folder=(S.settings&&S.settings.folder)||'';sh.sheet=(S.settings&&S.settings.sheet)||'';sh.sheetTab=(S.settings&&S.settings.sheetTab)||'';
+  sh.videos=Array.isArray(S.videos)?S.videos:[];sh.selectedId=S.selectedId||'';sh.sheetRows=Array.isArray(S.sheetRows)?S.sheetRows:[];
+ }
+ if(!S.sections.shorts)S.sections.shorts=blankSection();
+ if(!S.sections.longform)S.sections.longform=blankSection();
+ ['shorts','longform'].forEach(k=>{const x=S.sections[k];x.folder=x.folder||'';x.sheet=x.sheet||'';x.sheetTab=x.sheetTab||'';if(!Array.isArray(x.videos))x.videos=[];if(!Array.isArray(x.sheetRows))x.sheetRows=[];if(typeof x.selectedId!=='string')x.selectedId=''});
+ mirrorSection();
+}
+function switchSection(name){S.section=name==='longform'?'longform':'shorts';migrateSections();save();renderSectionUI();renderAll();const x=sec();log('Switched to '+secName()+' section — Drive folder: '+(x.folder||'(not set)')+' • Tracker sheet: '+(x.sheet||'(not set)')+' • '+x.videos.length+' video(s) in this section.')}
+function renderSectionUI(){
+ document.querySelectorAll('.secTab').forEach(b=>b.classList.toggle('active',b.dataset.section===S.section));
+ const t=$('driveCardTitle');if(t)t.textContent=secIcon()+' '+secName()+' — Drive source';
+ const fi=$('folderInput');if(fi&&document.activeElement!==fi){fi.value=sec().folder||'';fi.placeholder=secName()+' Drive folder ID or link'}
+ const vl=$('statVideosLabel');if(vl)vl.textContent='Drive videos found — '+secName();
+ const vs=$('statVideosSub');if(vs)vs.textContent='From your '+secName()+' Drive folder';
+ const sb=$('schedCard');if(sb)sb.style.display=(S.section==='shorts')?'':'none';
+ const sn=$('shortsNote');if(sn)sn.style.display=(S.section==='shorts')?'':'none';
+}
+migrateSections();
 let googleToken='',driveToken='',ytToken='',tokenClient=null,recog=null,listening=false;let _credStatus={};
 const TK='krishna_publisher_tokens_v7';
 function storeTok(kind,resp){try{const all=JSON.parse(localStorage.getItem(TK)||'{}');all[kind]={t:resp.access_token,exp:Date.now()+((resp.expires_in||3500)-120)*1000};localStorage.setItem(TK,JSON.stringify(all))}catch(e){}}
@@ -282,7 +328,7 @@ function readTok(kind){try{const all=JSON.parse(localStorage.getItem(TK)||'{}');
 function silentRefresh(kind){const isD=kind==='drive';const cid=isD?(S.settings.driveClient||S.settings.googleClient):(S.settings.youtubeClient||S.settings.googleClient);if(!cid||!window.google||!google.accounts)return;const scope=isD?'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets':'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly';makeTokenClient(cid,scope,r=>{if(r.error||!r.access_token)return;if(isD){driveToken=r.access_token;googleToken=driveToken;storeTok('drive',r);$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive session restored automatically — no sign-in needed.')}else{ytToken=r.access_token;storeTok('yt',r);$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube session restored automatically — no sign-in needed.')}}).requestAccessToken({prompt:''});}
 function restoreSessions(){const d=readTok('drive'),y=readTok('yt');if(d){driveToken=d;googleToken=d;$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive session restored (saved sign-in).')}if(y){ytToken=y;$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube session restored (saved sign-in).')}setTimeout(()=>{if(!driveToken&&(S.settings.driveClient||S.settings.googleClient))silentRefresh('drive');if(!ytToken&&(S.settings.youtubeClient||S.settings.googleClient))silentRefresh('yt')},2500);}
 function load(){try{return JSON.parse(localStorage.getItem(LS))}catch(e){return null}}
-function save(){localStorage.setItem(LS,JSON.stringify(S));scheduleCloudSave()}
+function save(){syncLegacyToSection();localStorage.setItem(LS,JSON.stringify(S));scheduleCloudSave()}
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function log(m){const el=$('log');const t=new Date().toLocaleTimeString();el.textContent+=(el.textContent?'\n':'')+'['+t+'] '+m;el.scrollTop=el.scrollHeight;console.log(m)}
@@ -291,16 +337,17 @@ function showView(v){document.querySelectorAll('.view').forEach(x=>x.classList.r
 function folderIdFrom(v){if(!v)return '';const m=String(v).match(/[-\w]{25,}/);return m?m[0]:v.trim()}
 function selectedVideo(){return S.videos.find(v=>v.id===S.selectedId)||null}
 function init(){
- $('folderInput').value=S.settings.folder||'';
+ migrateSections();
+ $('folderInput').value=sec().folder||'';
  initSettingsFields();
  if(location.hostname.endsWith('github.io')){$('liveBadge').textContent='● Live on GitHub Pages: '+location.hostname;$('liveBadge').className='pill ok'}
  renderPlatformChecks();renderAll();
  chatMsg('muse','Hello 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
- log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));vaultReturnMsg();restoreSessions();initAuth();
+ log('App ready. Section: '+secName()+' — Drive folder: '+(sec().folder||'(not set)'));vaultReturnMsg();restoreSessions();initAuth();
 }
 function updateDashChannel(){const c=((S.settings&&S.settings.channel)||'').trim();const d=$('dashChannel');if(d)d.textContent=c||'Your channel';const sub=$('dashChannelSub');if(sub)sub.textContent=c?'Your channel — from your Settings':'Add your channel name in Settings'}
-function renderAll(){renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist();updateDashChannel()}
-function renderStats(){$('statVideos').textContent=S.videos.length;$('statQueue').textContent=S.queue.filter(q=>q.status!=='done').length;$('statPublished').textContent=S.history.length}
+function renderAll(){renderSectionUI();renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist();updateDashChannel()}
+function renderStats(){$('statVideos').textContent=sec().videos.length;$('statQueue').textContent=S.queue.filter(q=>q.status!=='done').length;$('statPublished').textContent=S.history.length}
 function renderReadiness(){
  const rows=[
   ['Google Drive (your account)',!!(S.settings.driveClient||S.settings.googleClient),'Add your Drive Client ID in Settings + secret to your vault'],
@@ -317,18 +364,18 @@ function renderChecklist(){
 function renderPlatformChecks(){
  $('platformChecks').innerHTML=PLATFORMS.map(p=>'<label class="check"><input type="checkbox" data-plat="'+p.id+'" '+(S.platforms[p.id]?'checked':'')+' onchange="S.platforms[this.dataset.plat]=this.checked;save()"><span><b>'+p.icon+' '+esc(p.name)+'</b><br><span class="small">'+(p.mode==='direct'?'Direct upload from browser':p.mode==='meta'?'Meta Graph API':'Via Muse Bridge webhook / Muse Job')+'</span></span></label>').join('');
 }
-function saveSettings(){const dc=$('sDriveClient').value.trim(),yc=$('sYtClient').value.trim();S.settings={googleClient:dc||yc,driveClient:dc,youtubeClient:yc,folder:folderIdFrom($('sFolder').value),sheet:sheetIdFrom($('sSheet').value),sheetTab:$('sSheetTab').value.trim(),fbPage:$('sFbPage').value.trim(),igId:$('sIgId').value.trim(),webhook:$('sWebhook').value.trim(),channel:$('sChannel').value.trim()};$('folderInput').value=S.settings.folder;save();renderAll();alert('Settings saved — synced to your cloud account. Secrets are NOT in these settings; they live only in your vault.');log('Settings saved (no secrets in settings).')}
+function saveSettings(){const dc=$('sDriveClient').value.trim(),yc=$('sYtClient').value.trim();migrateSections();const sh=S.sections.shorts,lf=S.sections.longform;sh.folder=folderIdFrom($('sFolderShorts').value);sh.sheet=sheetIdFrom($('sSheetShorts').value);sh.sheetTab=$('sSheetTabShorts').value.trim();lf.folder=folderIdFrom($('sFolderLong').value);lf.sheet=sheetIdFrom($('sSheetLong').value);lf.sheetTab=$('sSheetTabLong').value.trim();S.settings={googleClient:dc||yc,driveClient:dc,youtubeClient:yc,folder:sh.folder,sheet:sh.sheet,sheetTab:sh.sheetTab,fbPage:$('sFbPage').value.trim(),igId:$('sIgId').value.trim(),webhook:$('sWebhook').value.trim(),channel:$('sChannel').value.trim()};mirrorSection();$('folderInput').value=sec().folder;save();renderAll();alert('Settings saved — synced to your cloud account. Secrets are NOT in these settings; they live only in your vault.');log('Settings saved — Shorts and Long Form folders/sheets saved per section (no secrets in settings).')}
 function exportSettings(){download('publisher-settings-backup.json',JSON.stringify({settings:S.settings},null,2),'application/json')}
 function wipeAll(){if(confirm('Wipe all local app data on this device?')){localStorage.removeItem(LS);location.reload()}}
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 
 /* ---------- DEMO + DRIVE ---------- */
 function loadDemo(){
- S.videos=[
+ sec().videos=[
   {id:'demo1',name:'01-Sample-Video-One.mp4',title:'Sample Video One',size:'—',demo:true},
   {id:'demo2',name:'02-Sample-Video-Two.mp4',title:'Sample Video Two',size:'—',demo:true},
   {id:'demo3',name:'03-Sample-Video-Three.mp4',title:'Sample Video Three',size:'—',demo:true}];
- S.selectedId='demo1';save();renderAll();log('Demo mode: 3 sample videos loaded. Connect Google to load your real Drive files.');showView('drive');
+ sec().selectedId='demo1';mirrorSection();save();renderAll();log('Demo mode: 3 sample videos loaded into the '+secName()+' section. Connect Google to load your real Drive files.');showView('drive');
 }
 function makeTokenClient(cid,scope,cb){return google.accounts.oauth2.initTokenClient({client_id:cid,scope:scope,callback:cb})}
 function driveSignIn(){
@@ -346,18 +393,18 @@ function youtubeSignIn(){
 function googleSignIn(){driveSignIn()}
 async function loadDriveVideos(){
  if(!driveToken){driveSignIn();return}
- const folder=folderIdFrom($('folderInput').value||S.settings.folder);S.settings.folder=folder;save();
+ const folder=folderIdFrom($('folderInput').value||sec().folder);sec().folder=folder;mirrorSection();save();
  const q=encodeURIComponent("'"+folder+"' in parents and trashed=false and (mimeType contains 'video/' or name contains '.mp4' or name contains '.mov')");
- try{log('Loading Drive folder '+folder+' …');
+ try{log('Loading '+secName()+' Drive folder '+folder+' …');
   const res=await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name,mimeType,size,thumbnailLink,webViewLink,createdTime)&orderBy=createdTime desc&pageSize=100',{headers:{Authorization:'Bearer '+driveToken}});
   const data=await res.json();if(!res.ok)throw new Error((data.error&&data.error.message)||res.status);
-  S.videos=(data.files||[]).map(f=>({id:f.id,name:f.name,title:f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '),size:f.size?Math.round(f.size/1048576*10)/10+' MB':'—',thumb:f.thumbnailLink,link:f.webViewLink}));
-  if(S.videos.length)S.selectedId=S.videos[0].id;save();renderAll();log('Drive: '+S.videos.length+' video(s) found.');loadSheetRows(true);
+  sec().videos=(data.files||[]).map(f=>({id:f.id,name:f.name,title:f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '),size:f.size?Math.round(f.size/1048576*10)/10+' MB':'—',thumb:f.thumbnailLink,link:f.webViewLink}));
+  if(sec().videos.length)sec().selectedId=sec().videos[0].id;mirrorSection();save();renderAll();log('Drive ('+secName()+'): '+sec().videos.length+' video(s) found.');loadSheetRows(true);
  }catch(e){log('Drive load failed: '+e.message);alert('Drive load failed: '+e.message+'\nCheck folder sharing + that Drive API is enabled.')}
 }
 function renderVideos(){
- const q=($('driveSearch')?$('driveSearch').value.toLowerCase():'');const list=S.videos.filter(v=>!q||v.name.toLowerCase().includes(q));
- $('videoList').innerHTML=list.length?list.map(v=>'<div class="video">'+(v.thumb?'<img class="thumb" src="'+esc(v.thumb)+'" alt="">':'<div class="thumb" style="display:grid;place-items:center;font-size:28px">🎬</div>')+'<div class="grow"><b>'+esc(v.title||v.name)+'</b><div class="small">'+esc(v.name)+' • '+esc(v.size||'')+(v.demo?' • DEMO':'')+'</div><div class="row" style="margin-top:8px"><button class="btn small" onclick="selectVideo(\''+v.id+'\')">Use this video</button><button class="btn small secondary" onclick="previewVideo(\''+v.id+'\')">Preview</button>'+(v.link?'<a href="'+esc(v.link)+'" target="_blank" rel="noopener">Open in Drive</a>':'')+'</div></div>'+(S.selectedId===v.id?'<span class="badge gold">Selected</span>':'')+sheetBadgeHtml(v)+'</div>').join(''):'<p class="small">No videos loaded yet. Connect Google and press “Load videos”, or try Demo mode.</p>';
+ const q=($('driveSearch')?$('driveSearch').value.toLowerCase():'');const list=sec().videos.filter(v=>!q||v.name.toLowerCase().includes(q));
+ $('videoList').innerHTML=list.length?list.map(v=>'<div class="video">'+(v.thumb?'<img class="thumb" src="'+esc(v.thumb)+'" alt="">':'<div class="thumb" style="display:grid;place-items:center;font-size:28px">🎬</div>')+'<div class="grow"><b>'+esc(v.title||v.name)+'</b><div class="small">'+esc(v.name)+' • '+esc(v.size||'')+(v.demo?' • DEMO':'')+'</div><div class="row" style="margin-top:8px"><button class="btn small" onclick="selectVideo(\''+v.id+'\')">Use this video</button><button class="btn small secondary" onclick="previewVideo(\''+v.id+'\')">Preview</button>'+(v.link?'<a href="'+esc(v.link)+'" target="_blank" rel="noopener">Open in Drive</a>':'')+'</div></div>'+(sec().selectedId===v.id?'<span class="badge gold">Selected</span>':'')+sheetBadgeHtml(v)+'</div>').join(''):'<p class="small">No videos loaded yet. Connect Google and press “Load videos”, or try Demo mode.</p>';
 }
 function selectVideo(id){S.selectedId=id;save();renderAll();suggestCopy(false);showView('compose');log('Selected: '+(selectedVideo()?selectedVideo().name:id))}
 function previewVideo(id){const v=S.videos.find(x=>x.id===id);if(!v)return;S.selectedId=id;save();renderAll();
@@ -373,33 +420,33 @@ function suggestCopy(announce=true){const v=selectedVideo();const base=(v?(v.tit
  if(!$('fCaption').value||announce)$('fCaption').value=base+'\n\nNew video — thanks for watching.\n\nFollow for more.';
  if(!$('fTags').value||announce)$('fTags').value='video, shorts';
  if(announce)log('Suggested title/caption/tags filled. Edit freely before publishing.')}
-function currentJob(){const v=selectedVideo();return{app:'Krishna Muse Publisher',version:1,createdAt:new Date().toISOString(),video:v?{driveId:v.demo?null:v.id,name:v.name,driveLink:v.link||('https://drive.google.com/file/d/'+v.id+'/view'),publicUrl:v.demo?null:('https://drive.google.com/uc?export=download&id='+v.id)}:null,title:$('fTitle').value.trim(),caption:$('fCaption').value.trim(),tags:$('fTags').value.split(',').map(x=>x.trim()).filter(Boolean),privacy:$('fPrivacy').value,madeForKids:$('fKids').value==='true',schedule:$('fSchedule').value||null,platforms:PLATFORMS.filter(p=>S.platforms[p.id]).map(p=>p.id),channel:S.settings.channel}}
+function currentJob(){const v=selectedVideo();return{app:'Krishna Muse Publisher',version:1,createdAt:new Date().toISOString(),video:v?{driveId:v.demo?null:v.id,name:v.name,driveLink:v.link||('https://drive.google.com/file/d/'+v.id+'/view'),publicUrl:v.demo?null:('https://drive.google.com/uc?export=download&id='+v.id)}:null,title:$('fTitle').value.trim(),caption:$('fCaption').value.trim(),tags:$('fTags').value.split(',').map(x=>x.trim()).filter(Boolean),privacy:$('fPrivacy').value,madeForKids:$('fKids').value==='true',schedule:$('fSchedule').value||null,platforms:PLATFORMS.filter(p=>S.platforms[p.id]).map(p=>p.id),channel:S.settings.channel,section:S.section}}
 function addToQueue(){const job=currentJob();if(!job.video){alert('Select a video first.');return}job.id='q'+Date.now();job.status='queued';S.queue.push(job);save();renderAll();log('Added to queue: '+job.title);showView('queue')}
-function renderQueue(){$('queueList').innerHTML=S.queue.length?'<table><tr><th>Video</th><th>Platforms</th><th>Status</th><th></th></tr>'+S.queue.map(q=>'<tr><td><b>'+esc(q.title||q.video.name)+'</b><br><span class="small">'+esc(q.video.name)+'</span></td><td>'+q.platforms.map(esc).join(', ')+'</td><td>'+esc(q.status)+'</td><td><button class="btn small secondary" onclick="removeQueue(\''+q.id+'\')">Remove</button></td></tr>').join('')+'</table>':'<p class="small">Queue is empty.</p>'}
+function renderQueue(){$('queueList').innerHTML=S.queue.length?'<table><tr><th>Video</th><th>Platforms</th><th>Status</th><th></th></tr>'+S.queue.map(q=>'<tr><td><b>'+esc(q.title||q.video.name)+'</b> '+(q.section?'<span class="badge gold">'+(q.section==='longform'?'🎬 Long Form':'⚡ Shorts')+'</span>':'')+'<br><span class="small">'+esc(q.video.name)+'</span></td><td>'+q.platforms.map(esc).join(', ')+'</td><td>'+esc(q.status)+'</td><td><button class="btn small secondary" onclick="removeQueue(\''+q.id+'\')">Remove</button></td></tr>').join('')+'</table>':'<p class="small">Queue is empty.</p>'}
 function removeQueue(id){S.queue=S.queue.filter(q=>q.id!==id);save();renderAll()}
 function clearQueue(){if(confirm('Clear the whole queue?')){S.queue=[];save();renderAll()}}
 async function processQueue(){if(!S.queue.length){alert('Queue is empty.');return}if(!confirm('Publish '+S.queue.length+' queued item(s) now to their ticked platforms?'))return;for(const q of [...S.queue]){applyJobToForm(q);await publishSelected(true);q.status='done'}save();renderAll()}
 function applyJobToForm(q){S.selectedId=q.video.driveId||S.selectedId;$('fTitle').value=q.title;$('fCaption').value=q.caption;$('fTags').value=q.tags.join(', ')}
-function renderHistory(){$('historyList').innerHTML=S.history.length?'<table><tr><th>When</th><th>Title</th><th>Platform</th><th>Result / Link</th></tr>'+S.history.slice().reverse().map(h=>'<tr><td>'+esc(h.when)+'</td><td>'+esc(h.title)+'</td><td>'+esc(h.platform)+'</td><td>'+(h.url?'<a href="'+esc(h.url)+'" target="_blank" rel="noopener">'+esc(h.result)+'</a>':esc(h.result))+'</td></tr>').join('')+'</table>':'<p class="small">Nothing published from this device yet.</p>'}
-function recordHistory(platform,result,url){S.history.push({when:new Date().toLocaleString(),title:$('fTitle').value.trim(),platform,result,url:url||''});save();renderStats();renderHistory()}
+function renderHistory(){$('historyList').innerHTML=S.history.length?'<table><tr><th>When</th><th>Title</th><th>Platform</th><th>Result / Link</th></tr>'+S.history.slice().reverse().map(h=>'<tr><td>'+esc(h.when)+'</td><td>'+esc(h.title)+(h.section?' <span class="badge">'+(h.section==='longform'?'🎬 Long Form':'⚡ Shorts')+'</span>':'')+'</td><td>'+esc(h.platform)+'</td><td>'+(h.url?'<a href="'+esc(h.url)+'" target="_blank" rel="noopener">'+esc(h.result)+'</a>':esc(h.result))+'</td></tr>').join('')+'</table>':'<p class="small">Nothing published from this device yet.</p>'}
+function recordHistory(platform,result,url,sectionTag){S.history.push({when:new Date().toLocaleString(),title:$('fTitle').value.trim(),platform,result,url:url||'',section:sectionTag||S.section});save();renderStats();renderHistory()}
 function exportCSV(){const rows=[['SL NO','Title','Caption','Tags','Drive Link','Published','YouTube Link']];S.history.forEach((h,i)=>rows.push([i+1,h.title,'','', '',h.platform+' — '+h.result+' ('+h.when+')',h.url||'']));download('publisher-history.csv',rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');log('CSV exported — columns match your “youtube videos” tracker sheet.')}
 
 /* ---------- GOOGLE SHEETS TRACKER ---------- */
 function sheetIdFrom(v){if(!v)return '';const m=String(v).match(/\/d\/([-\w]{20,})/);if(m)return m[1];const m2=String(v).match(/^([-\w]{20,})$/);return m2?m2[1]:String(v).trim()}
 function normTitle(s){return String(s||'').toLowerCase().replace(/\.[a-z0-9]+$/,'').replace(/[^a-z0-9]+/g,' ').trim()}
-function sheetRange(a1){const tab=(S.settings.sheetTab||'').trim();return (tab?("'"+tab.replace(/'/g,"''")+"'!"):'')+a1}
-async function sheetsFetch(path,opts){const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheetIdFrom(S.settings.sheet)+path,Object.assign({headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'}},opts||{}));const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error((d.error&&d.error.message)||('Sheets API '+r.status));return d}
-async function loadSheetRows(silent){if(!sheetIdFrom(S.settings.sheet)){if(!silent)alert('No tracker sheet set — add your own sheet link in Settings, or skip sheet validation.');return null}if(!driveToken){if(!silent)alert('Connect Drive first — the tracker sheet is read with your Drive sign-in (it now also asks for Sheets permission).');return null}
- try{const d=await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A1:G1000')));const vals=d.values||[];S.sheetRows=vals.map((r,i)=>({row:i+1,sl:r[0]||'',title:r[1]||'',caption:r[2]||'',tags:r[3]||'',driveLink:r[4]||'',published:r[5]||'',ytLink:r[6]||''})).filter(x=>x.row>1&&(x.title||x.driveLink));save();renderVideos();log('Sheet validated: '+S.sheetRows.length+' row(s) in tracker, '+S.sheetRows.filter(x=>String(x.published).trim().toUpperCase()==='YES').length+' marked Published YES.');return S.sheetRows}
+function sheetRange(a1,sk){const tab=(secOf(sk).sheetTab||'').trim();return (tab?("'"+tab.replace(/'/g,"''")+"'!"):'')+a1}
+async function sheetsFetch(path,opts,sk){const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheetIdFrom(secOf(sk).sheet)+path,Object.assign({headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'}},opts||{}));const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error((d.error&&d.error.message)||('Sheets API '+r.status));return d}
+async function loadSheetRows(silent,sk){const sx=secOf(sk);if(!sheetIdFrom(sx.sheet)){if(!silent)alert('No tracker sheet set for this section — add that section’s sheet link in Settings, or skip sheet validation.');return null}if(!driveToken){if(!silent)alert('Connect Drive first — the tracker sheet is read with your Drive sign-in (it now also asks for Sheets permission).');return null}
+ try{const d=await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A1:G1000',sk)),null,sk);const vals=d.values||[];sx.sheetRows=vals.map((r,i)=>({row:i+1,sl:r[0]||'',title:r[1]||'',caption:r[2]||'',tags:r[3]||'',driveLink:r[4]||'',published:r[5]||'',ytLink:r[6]||''})).filter(x=>x.row>1&&(x.title||x.driveLink));mirrorSection();save();renderVideos();log('Sheet validated ('+(sk?(sk==='longform'?'Long Form':'Shorts'):secName())+'): '+sx.sheetRows.length+' row(s) in tracker, '+sx.sheetRows.filter(x=>String(x.published).trim().toUpperCase()==='YES').length+' marked Published YES.');return sx.sheetRows}
  catch(e){log('Sheet validation failed: '+e.message);if(!silent)alert('Could not read the tracker sheet:\n'+e.message+'\n\nCheck: 1) Google Sheets API is enabled in the Drive Google Cloud project, 2) you Reconnected Drive after the v6 update (new Sheets permission), 3) the sheet belongs to / is shared with the account you signed in with.');return null}}
-function sheetStatusFor(v){const rows=S.sheetRows||[];if(!rows.length)return null;const nt=normTitle(v.title||v.name);const row=rows.find(r=>normTitle(r.title)===nt)||rows.find(r=>r.driveLink&&v.link&&r.driveLink===v.link);if(!row)return{state:'missing',label:'Sheet: not added'};if(String(row.published).trim().toUpperCase()==='YES')return{state:'yes',label:'Sheet: Published YES',row};return{state:'added',label:'Sheet: added, not published',row}}
+function sheetStatusFor(v,sk){const rows=secOf(sk).sheetRows||[];if(!rows.length)return null;const nt=normTitle(v.title||v.name);const row=rows.find(r=>normTitle(r.title)===nt)||rows.find(r=>r.driveLink&&v.link&&r.driveLink===v.link);if(!row)return{state:'missing',label:'Sheet: not added'};if(String(row.published).trim().toUpperCase()==='YES')return{state:'yes',label:'Sheet: Published YES',row};return{state:'added',label:'Sheet: added, not published',row}}
 function sheetBadgeHtml(v){const st=sheetStatusFor(v);if(!st)return'';return '<span class="badge '+(st.state==='yes'?'gold':'')+'">'+esc(st.label)+'</span>'}
-async function validateBeforeUpload(job){if(!sheetIdFrom(S.settings.sheet))return true;const rows=await loadSheetRows(true);if(!rows){log('Sheet validation could not run (Drive not connected) — upload not blocked. Connect Drive to enable duplicate checks.');return true}const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink});if(st&&st.state==='yes'){alert('Already uploaded — the tracker sheet has Published = YES for \u201C'+(job.title||job.video.name)+'\u201D. Upload skipped to avoid a duplicate.');log('Upload blocked by sheet validation: already Published YES.');return false}log('Sheet check before upload: '+(st?st.label:'not added — a new row will be created after upload')+'.');return true}
-async function markSheetPublished(job,url){if(!driveToken||!sheetIdFrom(S.settings.sheet)){log('Sheet not updated (Drive not connected).');return}
- try{const rows=(S.sheetRows&&S.sheetRows.length)?S.sheetRows:((await loadSheetRows(true))||[]);const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink});const title=job.title||job.video.name;
-  if(st&&st.row){const r=st.row;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('F'+r.row+':G'+r.row))+'?valueInputOption=USER_ENTERED',{method:'PUT',body:JSON.stringify({values:[['YES',url]]})});log('Sheet updated: row '+r.row+' → Published YES with the YouTube link.')}
-  else{const nextSl=rows.reduce((mx,x)=>Math.max(mx,parseInt(x.sl)||0),0)+1;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A:G'))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS',{method:'POST',body:JSON.stringify({values:[[nextSl,title,job.caption||'',(job.tags||[]).join(', '),job.video.driveLink||'','YES',url]]})});log('Sheet: new row '+nextSl+' added → Published YES.')}
-  await loadSheetRows(true);
+async function validateBeforeUpload(job){if(!sheetIdFrom(sec().sheet))return true;const rows=await loadSheetRows(true);if(!rows){log('Sheet validation could not run (Drive not connected) — upload not blocked. Connect Drive to enable duplicate checks.');return true}const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink});if(st&&st.state==='yes'){alert('Already uploaded — the tracker sheet has Published = YES for \u201C'+(job.title||job.video.name)+'\u201D. Upload skipped to avoid a duplicate.');log('Upload blocked by sheet validation: already Published YES.');return false}log('Sheet check before upload: '+(st?st.label:'not added — a new row will be created after upload')+'.');return true}
+async function markSheetPublished(job,url,sk){if(!driveToken||!sheetIdFrom(secOf(sk).sheet)){log('Sheet not updated (Drive not connected).');return}
+ try{const sxr=secOf(sk);const rows=(sxr.sheetRows&&sxr.sheetRows.length)?sxr.sheetRows:((await loadSheetRows(true,sk))||[]);const st=sheetStatusFor({title:job.title,name:job.video.name,link:job.video.driveLink},sk);const title=job.title||job.video.name;
+  if(st&&st.row){const r=st.row;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('F'+r.row+':G'+r.row,sk))+'?valueInputOption=USER_ENTERED',{method:'PUT',body:JSON.stringify({values:[['YES',url]]})},sk);log('Sheet updated: row '+r.row+' → Published YES with the YouTube link.')}
+  else{const nextSl=rows.reduce((mx,x)=>Math.max(mx,parseInt(x.sl)||0),0)+1;await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A:G',sk))+':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS',{method:'POST',body:JSON.stringify({values:[[nextSl,title,job.caption||'',(job.tags||[]).join(', '),job.video.driveLink||'','YES',url]]})},sk);log('Sheet: new row '+nextSl+' added → Published YES.')}
+  await loadSheetRows(true,sk);
  }catch(e){log('Sheet mark-YES failed: '+e.message+' — the upload itself succeeded; please update the sheet manually.')}}
 
 /* ---------- PUBLISHING ---------- */
@@ -443,6 +490,7 @@ async function publishSelected(fromQueue=false){
  if(!job.platforms.length){alert('Tick at least one platform.');return}
  if(!fromQueue){if(!window._pubArm){window._pubArm=true;log('Publish clicked for “'+(job.title||job.video.name)+'” → '+job.platforms.join(', ')+'. Click Publish once more within 10 seconds to confirm.');const b=$('publishBtn');b.textContent='⚠️ Click again to confirm publish';setTimeout(()=>{window._pubArm=false;b.textContent='🚀 Publish now'},10000);return}window._pubArm=false;$('publishBtn').textContent='🚀 Publish now';log('Publish confirmed — starting upload…')}
  if(job.platforms.includes('youtube')){const okSheet=await validateBeforeUpload(job);if(!okSheet)return}
+ if(S.section==='shorts'&&job.platforms.includes('youtube')&&job.title&&!/shorts/i.test(job.title)){job.title=job.title+' #Shorts';$('fTitle').value=job.title;log('Shorts section: #Shorts added to the YouTube title automatically.')}
  $('publishBtn').disabled=true;$('progress').style.display='block';$('progress').value=15;$('publishResult').innerHTML='';
  const results=[];let blob=null;
  try{
@@ -480,8 +528,8 @@ async function scheduleAll(){
  window._schedArm=false;$('schedBtn').textContent='📅 Schedule all unpublished (10/day)';window._schedStop=false;
  if(!ytToken){log('Bulk schedule: YouTube not connected.');alert('Connect YouTube first.');return}
  if(!driveToken){log('Bulk schedule: Drive not connected.');alert('Connect Drive first.');return}
- if(!S.videos.length&&typeof loadDriveVideos==='function'){await loadDriveVideos()}
- const rows=await loadSheetRows(true);if(!rows){log('Bulk schedule: could not read tracker sheet — aborted.');return}
+ const getShortVids=()=>((S.sections&&S.sections.shorts&&S.sections.shorts.videos)||[]);if(!getShortVids().length&&S.section==='shorts'&&typeof loadDriveVideos==='function'){await loadDriveVideos()}
+ const rows=await loadSheetRows(true,'shorts');if(!rows){log('Bulk schedule: could not read the Shorts tracker sheet — aborted.');return}
  const todo=rows.filter(r=>String(r.published).trim().toUpperCase()!=='YES').sort((a,b)=>(parseInt(a.sl)||0)-(parseInt(b.sl)||0));
  if(!todo.length){log('Bulk schedule: nothing unpublished in the tracker.');$('schedStatus').textContent='All tracker rows are already Published YES.';return}
  const slots=buildSlots(todo.length);let done=0;
@@ -489,15 +537,15 @@ async function scheduleAll(){
  for(let i=0;i<todo.length;i++){
   if(window._schedStop){log('Bulk schedule stopped by user after '+done+' video(s).');break}
   const row=todo[i];const slot=slots[i];
-  const did=driveIdFromLink(row.driveLink);const vid=S.videos.find(v=>v.id===did)||S.videos.find(v=>normTitle(v.title||v.name)===normTitle(row.title));
+  const did=driveIdFromLink(row.driveLink);const vid=getShortVids().find(v=>v.id===did)||getShortVids().find(v=>normTitle(v.title||v.name)===normTitle(row.title))||S.videos.find(v=>v.id===did);
   if(!vid){log('Bulk schedule: SL '+row.sl+' — no matching Drive video found, skipped.');continue}
   const job={title:row.title,caption:row.caption,tags:String(row.tags||'').split(',').map(x=>x.trim()).filter(Boolean),privacy:'private',publishAt:slot.iso,madeForKids:false,video:{driveId:vid.id,name:vid.name,driveLink:row.driveLink}};
   try{
    $('schedStatus').textContent='Scheduling SL '+row.sl+' ('+(i+1)+' of '+todo.length+') → releases '+slot.label+' …';
    const blob=await downloadDriveBlob(vid.id);
    const url=await uploadYouTube(job,blob);
-   $('fTitle').value=row.title;recordHistory('YouTube','Scheduled '+slot.label,url);
-   await markSheetPublished(job,url);
+   $('fTitle').value=row.title;recordHistory('YouTube','Scheduled '+slot.label,url,'shorts');
+   await markSheetPublished(job,url,'shorts');
    done++;log('📅 Scheduled SL '+row.sl+' “'+row.title+'” → releases '+slot.label+' → '+url);
   }catch(e){
    log('Bulk schedule STOPPED at SL '+row.sl+': '+e.message);
@@ -518,10 +566,10 @@ function runCommand(raw){
  let txt=input.toLowerCase().replace(/krishna!?\s*muse/g,'').replace(/hey krishna/g,'').trim();
  const reply=(m)=>chatMsg('muse',m);
  if(/deploy/.test(txt)){showView('settings');reply('Deploy mode: follow the 4 GitHub Pages steps on this page — your live URL will be https://YOUR-USERNAME.github.io/social-publisher/ (with your own GitHub username).');return}
- if(/refresh|load|list/.test(txt)&&/drive|video/.test(txt)){reply('Refreshing your Drive folder…');loadDriveVideos().then(()=>reply('Done — '+S.videos.length+' video(s) found. Say “publish latest to all” when ready.'));return}
+ if(/refresh|load|list/.test(txt)&&/drive|video/.test(txt)){reply('Refreshing your Drive folder…');loadDriveVideos().then(()=>reply('Done — '+sec().videos.length+' video(s) found in the '+secName()+' section. Say “publish latest to all” when ready.'));return}
  if(/export/.test(txt)){exportCSV();reply('History exported as CSV — columns match your YouTube tracker sheet (SL NO | Title | Link | Published).');return}
- if(/latest|newest/.test(txt)&&S.videos.length){selectVideoSilent(S.videos[0].id)}
- const named=S.videos.find(v=>txt&&v.title&&txt.includes(v.title.toLowerCase().slice(0,14)));if(named)selectVideoSilent(named.id);
+ if(/latest|newest/.test(txt)&&sec().videos.length){selectVideoSilent(sec().videos[0].id)}
+ const named=sec().videos.find(v=>txt&&v.title&&txt.includes(v.title.toLowerCase().slice(0,14)));if(named)selectVideoSilent(named.id);
  if(/queue/.test(txt)&&/add/.test(txt)){addToQueueSilent();reply('Added “'+(selectedVideo()?selectedVideo().name:'')+'” to the queue.');return}
  if(/publish|upload|post/.test(txt)){
    const plats=parsePlatforms(txt);if(plats){PLATFORMS.forEach(p=>S.platforms[p.id]=plats.includes(p.id));save();renderPlatformChecks()}
@@ -651,11 +699,11 @@ async function cloudSave(){if(!supa||!authUser)return;try{await supa.from('publi
 async function cloudLoad(){
  if(!supa||!authUser)return;
  try{const {data,error}=await supa.from('publisher_state').select('state').eq('user_id',authUser.id).maybeSingle();if(error)throw error;
-  if(data&&data.state&&Object.keys(data.state).length){_applyingCloud=true;S=Object.assign(S,data.state);if(S.settings)delete S.settings['meta'+'Token'];localStorage.setItem(LS,JSON.stringify(S));_applyingCloud=false;initSettingsFields();renderAll();setCloudBadge('Cloud: synced');log('Cloud settings loaded — this device is fully synced.')}
+  if(data&&data.state&&Object.keys(data.state).length){_applyingCloud=true;S=Object.assign(S,data.state);if(S.settings)delete S.settings['meta'+'Token'];localStorage.setItem(LS,JSON.stringify(S));_applyingCloud=false;migrateSections();initSettingsFields();renderAll();setCloudBadge('Cloud: synced');log('Cloud settings loaded — this device is fully synced.')}
   else{await cloudSave();log('No cloud settings yet — this device\u2019s settings were saved to your cloud. Other devices will load them after login.')}
  }catch(e){log('Cloud load failed (run PUBLISHER_LOGIN_SETUP.md SQL once if the table is missing): '+(e.message||e))}
 }
-function initSettingsFields(){$('folderInput').value=S.settings.folder||'';$('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolder').value=S.settings.folder||'';$('sSheet').value=S.settings.sheet||'';$('sSheetTab').value=S.settings.sheetTab||'';$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'';updateDashChannel()}
+function initSettingsFields(){migrateSections();$('folderInput').value=sec().folder||'';$('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolderShorts').value=S.sections.shorts.folder||'';$('sSheetShorts').value=S.sections.shorts.sheet||'';$('sSheetTabShorts').value=S.sections.shorts.sheetTab||'';$('sFolderLong').value=S.sections.longform.folder||'';$('sSheetLong').value=S.sections.longform.sheet||'';$('sSheetTabLong').value=S.sections.longform.sheetTab||'';$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'';updateDashChannel()}
 
 window.addEventListener('DOMContentLoaded',init);
 </script>
