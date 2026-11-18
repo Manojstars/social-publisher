@@ -45,19 +45,19 @@ progress{width:100%;height:10px}
 <body>
 <div id="loginGate"><div class="gateCard">
   <div style="font-size:34px">🪈</div><h2 style="margin:8px 0 4px">Krishna Muse Publisher — Login</h2>
-  <p class="small"><b>Complete Cloud:</b> this app stores everything in its own separate Supabase project — settings, Client IDs, queue and history sync to every device after login. This browser keeps only a cache. Nothing is shared with your CRM.</p>
+  <p class="small"><b>Welcome — this is a free, public app.</b> Create your free account, then add your own API keys in Settings — your keys stay in your private vault, tied to your login. Your non-secret settings, queue and history sync to every device after login; this browser keeps only a cache. Secrets are never synced and never stored in this browser.</p>
   <div id="cloudSetupBox">
-    <label>Publisher Supabase project URL (from YOUR new Publisher project — not the CRM one)</label><input id="cUrl" placeholder="https://xxxxxxxx.supabase.co">
-    <label>Publisher Supabase publishable / anon key (paste once per device, from the Publisher project — never the service_role key)</label><input id="cKey" type="password" placeholder="eyJ… / sb_publishable_…">
+    <label>Platform Supabase project URL (platform admins / self-hosters only — regular users skip this, the live app is already connected)</label><input id="cUrl" placeholder="https://xxxxxxxx.supabase.co">
+    <label>Platform Supabase publishable / anon key (admins / self-hosters only — never the service_role key)</label><input id="cKey" type="password" placeholder="eyJ… / sb_publishable_…">
     <button class="btn secondary" style="width:100%" onclick="saveCloudConfig()">Save connection on this device</button>
-    <p class="small">Bootstrap only: once <span class="kbd">cloud-config.json</span> is added to the GitHub repo (one-time, see PUBLISHER_LOGIN_SETUP.md), this box never appears again on any device — you will only ever type email + password.</p>
+    <p class="small">Bootstrap only: once <span class="kbd">cloud-config.json</span> is added to the GitHub repo (one-time, see GLOBAL_SETUP.md), this box never appears again on any device — you will only ever type email + password.</p>
   </div>
   <div id="loginFormBox" style="display:none">
-    <label>Email</label><input id="lEmail" type="email" placeholder="manojstar205@gmail.com" autocomplete="username">
-    <label>Password</label><input id="lPass" type="password" placeholder="Your Publisher password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <label>Email</label><input id="lEmail" type="email" placeholder="you@example.com" autocomplete="username">
+    <label>Password</label><input id="lPass" type="password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="btn" style="width:100%" onclick="doLogin()">Login</button>
     <div class="row" style="margin-top:10px"><button class="btn small secondary" onclick="doSignup()">Sign up (new user)</button><button class="btn small secondary" onclick="toggleCloudSetup()">Change Supabase connection</button></div>
-    <p class="small">First time here? Use Sign up with your Publisher-only email (e.g. krishnaformanu@gmail.com or manojstar205@gmail.com), click the email confirmation link if asked, then Login. This account exists only in the Publisher project — CRM users cannot use it, and it cannot open the CRM.</p>
+    <p class="small">First time here? Click <b>Sign up (new user)</b> with your own email, click the email confirmation link if asked, then Login. Email + password only — no other sign-in is needed. Your account, settings and private credential vault belong to you alone; no other user can see them.</p>
   </div>
   <div id="loginMsg" class="small" style="margin-top:10px"></div>
 </div></div>
@@ -78,7 +78,7 @@ progress{width:100%;height:10px}
 </header>
 
 <div class="wrap">
-  <div class="notice" id="safetyNotice"><b>Your control, always:</b> This app never auto-posts on load. Nothing uploads until you select a video, tick the platforms, and press Publish — or give a <span class="kbd">krishna! muse publish…</span> command and confirm it. Keys are stored only in your browser (localStorage), never in this file or on GitHub.</div>
+  <div class="notice" id="safetyNotice"><b>Your control, always:</b> This app never auto-posts on load. Nothing uploads until you select a video, tick the platforms, and press Publish — or give a <span class="kbd">krishna! muse publish…</span> command and confirm it. Your API secrets go only to your private vault (server-side, tied to your login) — never into this file, this browser, or GitHub.</div>
 
   <nav class="tabs">
     <button class="tab active" data-view="dashboard" onclick="showView('dashboard')">Dashboard</button>
@@ -95,14 +95,19 @@ progress{width:100%;height:10px}
       <div class="card span3"><div class="label">Drive videos found</div><div class="stat" id="statVideos">0</div><div class="small">From your Drive folder</div></div>
       <div class="card span3"><div class="label">In publish queue</div><div class="stat" id="statQueue">0</div><div class="small">Waiting / processing</div></div>
       <div class="card span3"><div class="label">Published (this device)</div><div class="stat" id="statPublished">0</div><div class="small">Logged in History</div></div>
-      <div class="card span3"><div class="label">Channel</div><div style="font-weight:800;margin-top:8px">Krish</div><div class="small">@Krish-Ram-888<br>krishnaformanu@gmail.com</div></div>
+      <div class="card span3"><div class="label">Channel</div><div id="dashChannel" style="font-weight:800;margin-top:8px">Your channel</div><div class="small" id="dashChannelSub">Add your channel name in Settings</div></div>
       <div class="card span8"><h3 style="margin-top:0">Quick start — 3 steps</h3>
         <ol>
-          <li><b>Settings &amp; Deploy:</b> paste your Google OAuth Client ID (free, 5 min — steps in SETUP.md), save. Your Drive folder is already pre-filled.</li>
+          <li><b>Settings &amp; Deploy:</b> add your own Google OAuth Client ID + Client Secret (free, 5 min — steps in GLOBAL_SETUP.md), Save to my vault, then connect below.</li>
           <li><b>Drive Videos:</b> Connect Google → Load videos → Preview → “Use this video”.</li>
           <li><b>Compose &amp; Publish:</b> title/caption/tags are auto-suggested, tick platforms, Publish. Or say: <span class="kbd">krishna! muse publish latest video to all</span></li>
         </ol>
         <div class="row"><button class="btn" onclick="showView('drive')">Load my Drive videos</button><button class="btn secondary" onclick="loadDemo()">Try demo mode (no keys)</button><button class="btn secondary" onclick="showView('settings')">Open Settings</button></div>
+      </div>
+      <div class="card span12"><h3 style="margin-top:0">📅 Bulk Schedule — 10 Shorts/day (YouTube scheduled publishing)</h3>
+        <div class="small">Uploads every unpublished tracker row (in SL order) to YouTube as <b>private with a scheduled release</b>: <b>10 per day</b> at 7:00, 8:30, 10:00, 11:30 AM, 1:00, 2:30, 4:00, 5:30, 7:00, 8:30 PM <b>US Eastern</b>, starting today. YouTube itself releases each video at its slot — no browser needs to stay open. Titles/captions/tags come from the tracker sheet exactly as written. Each scheduled row is marked Published YES with its link. If YouTube's daily API quota is reached, the run stops cleanly — press the button again after the quota resets (13:30 IST) and it resumes where it left off.</div>
+        <div class="row" style="margin-top:10px"><button class="btn" id="schedBtn" onclick="scheduleAll()">📅 Schedule all unpublished (10/day)</button><button class="btn small secondary" onclick="window._schedStop=true;log('Bulk schedule: stop requested — will halt after the current upload.')">Stop after current</button></div>
+        <div id="schedStatus" class="small" style="margin-top:8px"></div>
       </div>
       <div class="card span4"><h3 style="margin-top:0">Platform readiness</h3><div id="readiness"></div></div>
       <div class="card span12"><h3 style="margin-top:0">Activity log</h3><div id="log" class="log"></div><div class="row" style="margin-top:10px"><button class="btn small secondary" onclick="clearLog()">Clear log</button><button class="btn small secondary" onclick="exportCSV()">Export history CSV (for your YouTube tracker sheet)</button></div></div>
@@ -115,7 +120,7 @@ progress{width:100%;height:10px}
       <div class="card span4">
         <h3 style="margin-top:0">Google Drive source</h3>
         <label>Drive folder ID or link</label><input id="folderInput" placeholder="Folder ID">
-        <div class="small">Pre-filled with your shared folder: “Muse - AI - Automation”. You can paste any folder link — the ID is extracted automatically.</div>
+        <div class="small">Paste any of your own Drive folder links — the ID is extracted automatically. Set it once in Settings and it syncs with your login.</div>
         <div class="row" style="margin-top:12px"><button class="btn" onclick="loadDriveVideos()">Load videos</button><button class="btn secondary" onclick="loadSheetRows()">Validate with Google Sheet</button><button class="btn secondary" onclick="loadDemo()">Demo videos</button></div>
         <label style="margin-top:14px;display:block">Search</label><input id="driveSearch" placeholder="Search title…" oninput="renderVideos()">
         <div class="small">Supported: mp4, mov, webm, m4v. Videos are downloaded in your browser only when publishing to YouTube; for Instagram the Drive public link is used.</div>
@@ -131,9 +136,9 @@ progress{width:100%;height:10px}
       <div class="card span6">
         <h3 style="margin-top:0">Compose</h3>
         <div id="selectedBox" class="notice">No video selected yet — go to Drive Videos and choose one.</div>
-        <label>Title (YouTube / Facebook)</label><input id="fTitle" placeholder="e.g. Marcus Aurelius — Get Out of Bed">
+        <label>Title (YouTube / Facebook)</label><input id="fTitle" placeholder="e.g. My video title">
         <label>Caption / Description</label><textarea id="fCaption" placeholder="Hook line + thought + application…"></textarea>
-        <label>Hashtags / Tags (comma separated)</label><input id="fTags" placeholder="stoicism, marcusaurelius, shorts">
+        <label>Hashtags / Tags (comma separated)</label><input id="fTags" placeholder="video, shorts, mytopic">
         <div class="grid">
           <div class="span6"><label>Privacy (YouTube)</label><select id="fPrivacy"><option value="public">Public</option><option value="unlisted">Unlisted</option><option value="private">Private</option></select></div>
           <div class="span6"><label>Made for kids?</label><select id="fKids"><option value="false">No</option><option value="true">Yes</option></select></div>
@@ -192,41 +197,75 @@ progress{width:100%;height:10px}
   <!-- SETTINGS -->
   <section id="view-settings" class="view">
     <div class="grid">
-      <div class="card span6"><h3 style="margin-top:0">Settings (synced to your private cloud)</h3>
-        <label>Drive API — OAuth Client ID (create/sign-in under Manoj Stars account — Drive owner)</label><input id="sDriveClient" placeholder="Drive account: xxxx.apps.googleusercontent.com">
-        <label>YouTube API — OAuth Client ID (create/sign-in under krishnaformanu@gmail.com — channel owner)</label><input id="sYtClient" placeholder="YouTube account: xxxx.apps.googleusercontent.com">
-        <div class="small">Two separate sign-ins are supported: Drive videos are read with the Drive account token, YouTube uploads use the YouTube account token. You may also use the same Client ID in both boxes if one project is shared — the accounts you pick at sign-in are what matter.</div>
-        <label>Default Drive Folder ID</label><input id="sFolder" placeholder="Folder ID">
-        <label>Google Sheets Tracker — spreadsheet link or ID (your “youtube videos” sheet)</label><input id="sSheet" placeholder="Spreadsheet link or ID">
+      <div class="card span6"><h3 style="margin-top:0">My Accounts &amp; API Keys</h3>
+        <div class="notice success"><b>CREDENTIALS VAULT:</b> Client IDs and page/account IDs below are saved in your synced settings. <b>Secrets and tokens are different:</b> each one has its own <b>“Save to my vault”</b> button and is sent only to your private vault, tied to your login.<br><span class="small">Secrets go only to your private vault via encrypted HTTPS, are never stored in this browser, never in GitHub, and are never shown back — not even to you. To change one, save a new one.</span></div>
+        <h4>My credential status</h4>
+        <div id="credStatusPanel" class="small">Login, then your saved-credential status loads here.</div>
+        <div class="row" style="margin:8px 0 14px"><button class="btn small secondary" onclick="loadCredStatus(true)">Refresh credential status</button></div>
+
+        <h4>Google Drive — your own OAuth client</h4>
+        <label>Drive OAuth Client ID (saved in your settings)</label><input id="sDriveClient" placeholder="xxxx.apps.googleusercontent.com">
+        <label>Drive OAuth Client Secret (write-only — vault only)</label><input id="vDriveSecret" type="password" placeholder="Paste secret, then Save to my vault" autocomplete="off">
+        <div class="row"><button class="btn small" onclick="saveVaultCred('google_drive')">Save to my vault</button><button class="btn small danger" onclick="deleteVaultCred('google_drive')">Delete</button><span class="small" id="vStatus_google_drive">No secret saved yet</span></div>
+
+        <h4>Google YouTube — your own OAuth client</h4>
+        <label>YouTube OAuth Client ID (saved in your settings)</label><input id="sYtClient" placeholder="xxxx.apps.googleusercontent.com">
+        <label>YouTube OAuth Client Secret (write-only — vault only)</label><input id="vYtSecret" type="password" placeholder="Paste secret, then Save to my vault" autocomplete="off">
+        <div class="row"><button class="btn small" onclick="saveVaultCred('google_youtube')">Save to my vault</button><button class="btn small danger" onclick="deleteVaultCred('google_youtube')">Delete</button><span class="small" id="vStatus_google_youtube">No secret saved yet</span></div>
+        <div class="small">Two separate Google accounts are supported: Drive videos are read with your Drive account, YouTube uploads use your channel account. You may also use the same OAuth client for both. After saving each secret, use the <b>Connect Drive Once ∞ / Connect YouTube Once ∞</b> buttons at the top — the vault builds the sign-in link from <i>your</i> Client ID.</div>
+
+        <h4>Meta — Facebook + Instagram</h4>
+        <label>Facebook Page ID (saved in your settings)</label><input id="sFbPage" placeholder="Page ID">
+        <label>Instagram Business Account ID (saved in your settings)</label><input id="sIgId" placeholder="IG user ID">
+        <label>Meta Page Access Token (write-only — vault only, fetched securely only when you publish)</label><input id="vMetaToken" type="password" placeholder="EAA…" autocomplete="off">
+        <div class="row"><button class="btn small" onclick="saveVaultCred('meta')">Save to my vault</button><button class="btn small danger" onclick="deleteVaultCred('meta')">Delete</button><span class="small" id="vStatus_meta">Not saved</span></div>
+
+        <h4>X (Twitter) — write-only, vault only</h4>
+        <label>X API Key</label><input id="vXApiKey" type="password" autocomplete="off">
+        <label>X API Secret</label><input id="vXApiSecret" type="password" autocomplete="off">
+        <label>X Access Token</label><input id="vXAccessToken" type="password" autocomplete="off">
+        <label>X Access Token Secret</label><input id="vXAccessSecret" type="password" autocomplete="off">
+        <div class="row"><button class="btn small" onclick="saveVaultCred('x')">Save to my vault</button><button class="btn small danger" onclick="deleteVaultCred('x')">Delete</button><span class="small" id="vStatus_x">Not saved</span></div>
+
+        <h4>TikTok — write-only, vault only</h4>
+        <label>TikTok Client Key</label><input id="vTikTokKey" type="password" autocomplete="off">
+        <label>TikTok Client Secret</label><input id="vTikTokSecret" type="password" autocomplete="off">
+        <div class="row"><button class="btn small" onclick="saveVaultCred('tiktok')">Save to my vault</button><button class="btn small danger" onclick="deleteVaultCred('tiktok')">Delete</button><span class="small" id="vStatus_tiktok">Not saved</span></div>
+
+        <h4>LinkedIn — write-only, vault only</h4>
+        <label>LinkedIn Client ID</label><input id="vLinkedInId" type="password" autocomplete="off">
+        <label>LinkedIn Client Secret</label><input id="vLinkedInSecret" type="password" autocomplete="off">
+        <div class="row"><button class="btn small" onclick="saveVaultCred('linkedin')">Save to my vault</button><button class="btn small danger" onclick="deleteVaultCred('linkedin')">Delete</button><span class="small" id="vStatus_linkedin">Not saved</span></div>
+
+        <h4>Your content settings (synced, non-secret)</h4>
+        <label>Default Drive Folder ID</label><input id="sFolder" placeholder="Your Drive folder ID or link">
+        <label>Google Sheets Tracker — spreadsheet link or ID (your own tracker sheet)</label><input id="sSheet" placeholder="Spreadsheet link or ID">
         <label>Sheet tab name (blank = first tab)</label><input id="sSheetTab" placeholder="Blank = first tab">
-        <div class="small">Tracker columns: A = SL NO, B = Title, C = Link, D = Published. Before every upload the app checks this sheet and blocks duplicates (Published = YES). After a confirmed upload it writes the YouTube link and sets Published = YES automatically.</div>
-        <label>Meta: Facebook Page ID</label><input id="sFbPage" placeholder="Page ID">
-        <label>Meta: Instagram Business Account ID</label><input id="sIgId" placeholder="IG user ID">
-        <label>Meta: Page Access Token (paste, never commit to GitHub)</label><input id="sMetaToken" type="password" placeholder="EAA…">
-        <label>Muse Bridge Webhook URL (Make / n8n / Zapier — for X, TikTok, LinkedIn + Muse notify)</label><input id="sWebhook" placeholder="https://hook…/…">
-        <label>Your name / channel label</label><input id="sChannel" placeholder="Resilience Resonance">
+        <div class="small">Tracker columns: A = SL NO, B = Title, C = Caption, D = Tags, E = Drive Link, F = Published, G = YouTube Link. Before every upload the app checks this sheet and blocks duplicates (Published = YES). After a confirmed upload it writes the YouTube link and sets Published = YES automatically. Leave blank if you do not use a tracker sheet.</div>
+        <label>Muse Bridge Webhook URL (Make / n8n / Zapier — for X, TikTok, LinkedIn + Muse notify; a non-secret URL)</label><input id="sWebhook" placeholder="https://hook…/…">
+        <label>Your name / channel label</label><input id="sChannel" placeholder="Your channel name">
         <div class="row"><button class="btn" onclick="saveSettings()">Save settings</button><button class="btn secondary" onclick="exportSettings()">Backup settings JSON</button><button class="btn danger" onclick="wipeAll()">Wipe local data</button></div>
-        <p class="small">Never paste a Google client <i>secret</i>, Meta app secret, or any service_role key here or in GitHub. This app uses only public client IDs + user tokens in the browser.</p>
+        <p class="small">Never paste any secret into GitHub, chat, or the synced settings fields. Secrets belong only in the write-only vault boxes above. Never paste a service_role key anywhere in this app.</p>
       </div>
       <div class="card span6"><h3 style="margin-top:0">Deploy on GitHub Pages — in 4 steps</h3>
         <ol>
-          <li>Create a new GitHub repo, e.g. <span class="kbd">social-publisher</span> (username: manojstars).</li>
-          <li>Upload <span class="kbd">index.html</span> + <span class="kbd">README.md</span> from the zip Krishna gives you → Commit.</li>
+          <li>Create a new GitHub repo, e.g. <span class="kbd">social-publisher</span> (your own GitHub username).</li>
+          <li>Upload <span class="kbd">index.html</span> + <span class="kbd">README.md</span> from this repo → Commit.</li>
           <li>Repo → Settings → Pages → Source: <b>Deploy from a branch</b> → Branch: <b>main / (root)</b> → Save.</li>
-          <li>Your app goes live at <span class="kbd">https://manojstars.github.io/social-publisher/</span> — then add that exact URL as an Authorized JavaScript origin in your Google OAuth client (SETUP.md).</li>
+          <li>Your app goes live at <span class="kbd">https://YOUR-USERNAME.github.io/social-publisher/</span> — then add that exact origin as an Authorized JavaScript origin, and the vault function URL as the Authorized redirect URI, in your Google OAuth client (GLOBAL_SETUP.md).</li>
         </ol>
         <div class="notice success">Say <span class="kbd">krishna! muse deploy</span> to Krishna in Muse chat whenever you want a fresh zip of the latest version packaged for upload.</div>
         <h4>Free API setup checklist</h4><div id="checklist"></div>
       </div>
     </div>
   </section>
-  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v9.2 — Complete Cloud + Google Vault + new 7-column tracker (Title/Caption/Tags/Drive Link/Published/YouTube Link) • Built for Manu / Resilience Resonance • Static &amp; free on GitHub Pages • No server, no secret keys in code</p>
+  <p class="small" style="text-align:center;margin-top:22px">Krishna Muse Publisher v11.0 — Global Edition • Complete Cloud + Per-User Credentials Vault + 7-column tracker + Bulk Schedule (10 Shorts/day, YouTube scheduled publishing) • Open for everyone — bring your own API keys • Static &amp; free on GitHub Pages • No secrets in code</p>
 </div>
 
 <script>
 const LS='manu_social_publisher_v1';
-const DEFAULT_FOLDER='1rkK6gsGlz3c-1TcyY3O3ynrf8TnFRDJa';
-const DEFAULT_SHEET='1eAQVpj_3C9Ud9Ua9NL3ILoL8lsv4H1UjMGXwhonHeP4';
+const DEFAULT_FOLDER='';
+const DEFAULT_SHEET='';
 const PLATFORMS=[
  {id:'youtube',name:'YouTube Shorts',icon:'▶️',mode:'direct'},
  {id:'instagram',name:'Instagram Reels',icon:'📸',mode:'meta'},
@@ -235,8 +274,8 @@ const PLATFORMS=[
  {id:'tiktok',name:'TikTok',icon:'🎵',mode:'bridge'},
  {id:'linkedin',name:'LinkedIn',icon:'💼',mode:'bridge'}
 ];
-let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,sheet:DEFAULT_SHEET,sheetTab:'',fbPage:'',igId:'',metaToken:'',webhook:'',channel:'Resilience Resonance'},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
-let googleToken='',driveToken='',ytToken='',tokenClient=null,recog=null,listening=false;
+let S=load()||{settings:{googleClient:'',driveClient:'',youtubeClient:'',folder:DEFAULT_FOLDER,sheet:DEFAULT_SHEET,sheetTab:'',fbPage:'',igId:'',webhook:'',channel:''},videos:[],selectedId:'',queue:[],history:[],platforms:{youtube:true,instagram:true,facebook:true,x:false,tiktok:false,linkedin:false}};
+let googleToken='',driveToken='',ytToken='',tokenClient=null,recog=null,listening=false;let _credStatus={};
 const TK='krishna_publisher_tokens_v7';
 function storeTok(kind,resp){try{const all=JSON.parse(localStorage.getItem(TK)||'{}');all[kind]={t:resp.access_token,exp:Date.now()+((resp.expires_in||3500)-120)*1000};localStorage.setItem(TK,JSON.stringify(all))}catch(e){}}
 function readTok(kind){try{const all=JSON.parse(localStorage.getItem(TK)||'{}');const x=all[kind];return (x&&x.exp>Date.now())?x.t:''}catch(e){return ''}}
@@ -249,61 +288,60 @@ function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function log(m){const el=$('log');const t=new Date().toLocaleTimeString();el.textContent+=(el.textContent?'\n':'')+'['+t+'] '+m;el.scrollTop=el.scrollHeight;console.log(m)}
 function clearLog(){$('log').textContent=''}
 function showView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$('view-'+v).classList.add('active');document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));renderAll()}
-function folderIdFrom(v){if(!v)return DEFAULT_FOLDER;const m=String(v).match(/[-\w]{25,}/);return m?m[0]:v.trim()}
+function folderIdFrom(v){if(!v)return '';const m=String(v).match(/[-\w]{25,}/);return m?m[0]:v.trim()}
 function selectedVideo(){return S.videos.find(v=>v.id===S.selectedId)||null}
 function init(){
- $('folderInput').value=S.settings.folder||DEFAULT_FOLDER;
- $('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolder').value=S.settings.folder||DEFAULT_FOLDER;$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sMetaToken').value=S.settings.metaToken||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'Resilience Resonance';$('sSheet').value=S.settings.sheet||DEFAULT_SHEET;$('sSheetTab').value=S.settings.sheetTab||'';
+ $('folderInput').value=S.settings.folder||'';
+ initSettingsFields();
  if(location.hostname.endsWith('github.io')){$('liveBadge').textContent='● Live on GitHub Pages: '+location.hostname;$('liveBadge').className='pill ok'}
  renderPlatformChecks();renderAll();
- chatMsg('muse','Namaste Manu 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
+ chatMsg('muse','Hello 🙏 I am ready. Load your Drive videos, or command me: “krishna! muse publish latest video to all”. Nothing posts without your confirmation.');
  log('App ready. Folder: '+(S.settings.folder||DEFAULT_FOLDER));vaultReturnMsg();restoreSessions();initAuth();
 }
-function renderAll(){renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist()}
+function updateDashChannel(){const c=((S.settings&&S.settings.channel)||'').trim();const d=$('dashChannel');if(d)d.textContent=c||'Your channel';const sub=$('dashChannelSub');if(sub)sub.textContent=c?'Your channel — from your Settings':'Add your channel name in Settings'}
+function renderAll(){renderVideos();renderStats();renderReadiness();renderQueue();renderHistory();renderSelected();renderChecklist();updateDashChannel()}
 function renderStats(){$('statVideos').textContent=S.videos.length;$('statQueue').textContent=S.queue.filter(q=>q.status!=='done').length;$('statPublished').textContent=S.history.length}
 function renderReadiness(){
  const rows=[
-  ['Google Drive (Manoj Stars a/c)',!!(S.settings.driveClient||S.settings.googleClient),'Add Drive Client ID in Settings'],
-  ['YouTube (krishnaformanu a/c)',!!(S.settings.youtubeClient||S.settings.googleClient),'Add YouTube Client ID in Settings'],
-  ['Meta (FB + Instagram)',!!(S.settings.fbPage&&S.settings.metaToken),'Add Page ID + token in Settings'],
+  ['Google Drive (your account)',!!(S.settings.driveClient||S.settings.googleClient),'Add your Drive Client ID in Settings + secret to your vault'],
+  ['YouTube (your account)',!!(S.settings.youtubeClient||S.settings.googleClient),'Add your YouTube Client ID in Settings + secret to your vault'],
+  ['Meta (FB + Instagram)',!!(S.settings.fbPage&&_credStatus.meta&&_credStatus.meta.saved),'Add Page ID in Settings + Page token via Save to my vault'],
   ['Muse Bridge (X/TikTok/LinkedIn)',!!S.settings.webhook,'Add webhook URL in Settings, or use Copy Job'],
   ['Demo mode',true,'Works with no keys for a test run']];
  $('readiness').innerHTML=rows.map(r=>'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:7px 0"><span>'+esc(r[0])+'</span><span class="badge '+(r[1]?'gold':'')+'">'+(r[1]?'Ready':'Not set')+'</span></div>'+(r[1]?'':'<div class="small">'+esc(r[2])+'</div>')).join('');
 }
 function renderChecklist(){
- const items=[['Two Google setups: Drive API (Manoj Stars) + YouTube Data API v3 (krishnaformanu)',!!(S.settings.driveClient&&S.settings.youtubeClient)],['OAuth origin added for your github.io URL',false],['Meta app + Page token (Pages/Instagram permissions)',!!S.settings.metaToken],['Muse Bridge webhook created in Make/n8n (optional)',!!S.settings.webhook],['Repo Pages source set to main / root',location.hostname.endsWith('github.io')]];
+ const items=[['Your two Google setups: Drive API + YouTube Data API v3 (your own Google Cloud projects)',!!(S.settings.driveClient&&S.settings.youtubeClient)],['OAuth origin + vault redirect URI added for your github.io URL',false],['Meta app + Page token saved to your vault (Pages/Instagram permissions)',!!(_credStatus.meta&&_credStatus.meta.saved)],['Muse Bridge webhook created in Make/n8n (optional)',!!S.settings.webhook],['Repo Pages source set to main / root',location.hostname.endsWith('github.io')]];
  $('checklist').innerHTML=items.map(i=>'<div class="check"><input type="checkbox" '+(i[1]?'checked':'')+' disabled><span>'+esc(i[0])+'</span></div>').join('');
 }
 function renderPlatformChecks(){
  $('platformChecks').innerHTML=PLATFORMS.map(p=>'<label class="check"><input type="checkbox" data-plat="'+p.id+'" '+(S.platforms[p.id]?'checked':'')+' onchange="S.platforms[this.dataset.plat]=this.checked;save()"><span><b>'+p.icon+' '+esc(p.name)+'</b><br><span class="small">'+(p.mode==='direct'?'Direct upload from browser':p.mode==='meta'?'Meta Graph API':'Via Muse Bridge webhook / Muse Job')+'</span></span></label>').join('');
 }
-function saveSettings(){const dc=$('sDriveClient').value.trim(),yc=$('sYtClient').value.trim();S.settings={googleClient:dc||yc,driveClient:dc,youtubeClient:yc,folder:folderIdFrom($('sFolder').value),sheet:sheetIdFrom($('sSheet').value),sheetTab:$('sSheetTab').value.trim(),fbPage:$('sFbPage').value.trim(),igId:$('sIgId').value.trim(),metaToken:$('sMetaToken').value.trim(),webhook:$('sWebhook').value.trim(),channel:$('sChannel').value.trim()||'Resilience Resonance'};$('folderInput').value=S.settings.folder;save();renderAll();alert('Settings saved — synced to your cloud account.');log('Settings saved.')}
-function exportSettings(){download('publisher-settings-backup.json',JSON.stringify({settings:Object.assign({},S.settings,{metaToken:'(removed for safety)'})},null,2),'application/json')}
+function saveSettings(){const dc=$('sDriveClient').value.trim(),yc=$('sYtClient').value.trim();S.settings={googleClient:dc||yc,driveClient:dc,youtubeClient:yc,folder:folderIdFrom($('sFolder').value),sheet:sheetIdFrom($('sSheet').value),sheetTab:$('sSheetTab').value.trim(),fbPage:$('sFbPage').value.trim(),igId:$('sIgId').value.trim(),webhook:$('sWebhook').value.trim(),channel:$('sChannel').value.trim()};$('folderInput').value=S.settings.folder;save();renderAll();alert('Settings saved — synced to your cloud account. Secrets are NOT in these settings; they live only in your vault.');log('Settings saved (no secrets in settings).')}
+function exportSettings(){download('publisher-settings-backup.json',JSON.stringify({settings:S.settings},null,2),'application/json')}
 function wipeAll(){if(confirm('Wipe all local app data on this device?')){localStorage.removeItem(LS);location.reload()}}
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
 
 /* ---------- DEMO + DRIVE ---------- */
 function loadDemo(){
  S.videos=[
-  {id:'demo1',name:'01-Marcus-Aurelius-Get-Out-of-Bed.mp4',title:'Marcus Aurelius — Get Out of Bed',size:'—',demo:true},
-  {id:'demo2',name:'02-Seneca-Suffer-in-Your-Head.mp4',title:'Seneca — Suffer in Your Head',size:'—',demo:true},
-  {id:'demo3',name:'03-Epictetus-Control.mp4',title:'Epictetus — Control What You Can',size:'—',demo:true},
-  {id:'demo4',name:'04-Anger-Controls-You.mp4',title:'The Man Who Angers You, Controls You',size:'—',demo:true},
-  {id:'demo5',name:'Krishna-Raas-Flute-Vrindavan.mp4',title:'Krishna Raas — Flute in Vrindavan',size:'13.7 MB',demo:true}];
- S.selectedId='demo1';save();renderAll();log('Demo mode: 5 sample videos loaded (your real Shorts 1–4 + Krishna Raas). Connect Google to load the real Drive files.');showView('drive');
+  {id:'demo1',name:'01-Sample-Video-One.mp4',title:'Sample Video One',size:'—',demo:true},
+  {id:'demo2',name:'02-Sample-Video-Two.mp4',title:'Sample Video Two',size:'—',demo:true},
+  {id:'demo3',name:'03-Sample-Video-Three.mp4',title:'Sample Video Three',size:'—',demo:true}];
+ S.selectedId='demo1';save();renderAll();log('Demo mode: 3 sample videos loaded. Connect Google to load your real Drive files.');showView('drive');
 }
 function makeTokenClient(cid,scope,cb){return google.accounts.oauth2.initTokenClient({client_id:cid,scope:scope,callback:cb})}
 function driveSignIn(){
  const cid=S.settings.driveClient||S.settings.googleClient;
- if(!cid){alert('First add the Drive OAuth Client ID in Settings (created under the Manoj Stars account). See SETUP.md step 2A.');showView('settings');return}
+ if(!cid){alert('First add your Drive OAuth Client ID in Settings. See GLOBAL_SETUP.md.');showView('settings');return}
  if(!window.google||!google.accounts){alert('Google sign-in library is still loading — wait 3 seconds and try again.');return}
- makeTokenClient(cid,'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets',r=>{if(r.error){log('Drive sign-in error: '+r.error);alert('Drive sign-in failed: '+r.error);return}driveToken=r.access_token;googleToken=driveToken;storeTok('drive',r);$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive connected (sign in with the Manoj Stars account in the Google popup).');loadDriveVideos();}).requestAccessToken({prompt:''});
+ makeTokenClient(cid,'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets',r=>{if(r.error){log('Drive sign-in error: '+r.error);alert('Drive sign-in failed: '+r.error);return}driveToken=r.access_token;googleToken=driveToken;storeTok('drive',r);$('driveBadge').textContent='Drive: connected';$('driveBadge').className='pill ok';log('Drive connected (sign in with your Drive account in the Google popup).');loadDriveVideos();}).requestAccessToken({prompt:''});
 }
 function youtubeSignIn(){
  const cid=S.settings.youtubeClient||S.settings.googleClient;
- if(!cid){alert('First add the YouTube OAuth Client ID in Settings (created under krishnaformanu@gmail.com). See SETUP.md step 2B.');showView('settings');return}
+ if(!cid){alert('First add your YouTube OAuth Client ID in Settings. See GLOBAL_SETUP.md.');showView('settings');return}
  if(!window.google||!google.accounts){alert('Google sign-in library is still loading — wait 3 seconds and try again.');return}
- makeTokenClient(cid,'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly',r=>{if(r.error){log('YouTube sign-in error: '+r.error);alert('YouTube sign-in failed: '+r.error);return}ytToken=r.access_token;storeTok('yt',r);$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube connected (sign in with krishnaformanu@gmail.com in the Google popup).');}).requestAccessToken({prompt:''});
+ makeTokenClient(cid,'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly',r=>{if(r.error){log('YouTube sign-in error: '+r.error);alert('YouTube sign-in failed: '+r.error);return}ytToken=r.access_token;storeTok('yt',r);$('ytBadge').textContent='YouTube: connected';$('ytBadge').className='pill ok';log('YouTube connected (sign in with your channel account in the Google popup).');}).requestAccessToken({prompt:''});
 }
 function googleSignIn(){driveSignIn()}
 async function loadDriveVideos(){
@@ -328,12 +366,12 @@ function previewVideo(id){const v=S.videos.find(x=>x.id===id);if(!v)return;S.sel
 function renderSelected(){const v=selectedVideo();if(v){$('selectedBox').innerHTML='<b>Selected:</b> '+esc(v.name)+' <span class="badge gold">'+esc(v.size||'')+'</span>';if(!$('fTitle').value)$('fTitle').value=v.title||''}}
 
 /* ---------- COMPOSE HELPERS ---------- */
-function suggestCopy(announce=true){const v=selectedVideo();const base=(v?(v.title||v.name.replace(/\.[^.]+$/,'')):'Stoic Thought').trim();
+function suggestCopy(announce=true){const v=selectedVideo();const base=(v?(v.title||v.name.replace(/\.[^.]+$/,'')):'My Video').trim();
  const srow=v?sheetStatusFor(v):null;const sr=srow&&srow.row?srow.row:null;
- if(sr&&(sr.caption||sr.tags)){$('fTitle').value=sr.title||base;$('fCaption').value=sr.caption;$('fTags').value=sr.tags;if(announce)log('Title/caption/tags loaded from the tracker sheet (Krish captions).');return}
+ if(sr&&(sr.caption||sr.tags)){$('fTitle').value=sr.title||base;$('fCaption').value=sr.caption;$('fTags').value=sr.tags;if(announce)log('Title/caption/tags loaded from your tracker sheet.');return}
  if(!$('fTitle').value||announce)$('fTitle').value=base;
- if(!$('fCaption').value||announce)$('fCaption').value=base+'\n\nA Roman Stoic thought for today — pause, breathe, and apply it before the day decides for you.\n\nFollow Krish for 2 Stoic Shorts daily.';
- if(!$('fTags').value||announce)$('fTags').value='stoicism, marcusaurelius, seneca, epictetus, philosophy, mindset, shorts, resilience';
+ if(!$('fCaption').value||announce)$('fCaption').value=base+'\n\nNew video — thanks for watching.\n\nFollow for more.';
+ if(!$('fTags').value||announce)$('fTags').value='video, shorts';
  if(announce)log('Suggested title/caption/tags filled. Edit freely before publishing.')}
 function currentJob(){const v=selectedVideo();return{app:'Krishna Muse Publisher',version:1,createdAt:new Date().toISOString(),video:v?{driveId:v.demo?null:v.id,name:v.name,driveLink:v.link||('https://drive.google.com/file/d/'+v.id+'/view'),publicUrl:v.demo?null:('https://drive.google.com/uc?export=download&id='+v.id)}:null,title:$('fTitle').value.trim(),caption:$('fCaption').value.trim(),tags:$('fTags').value.split(',').map(x=>x.trim()).filter(Boolean),privacy:$('fPrivacy').value,madeForKids:$('fKids').value==='true',schedule:$('fSchedule').value||null,platforms:PLATFORMS.filter(p=>S.platforms[p.id]).map(p=>p.id),channel:S.settings.channel}}
 function addToQueue(){const job=currentJob();if(!job.video){alert('Select a video first.');return}job.id='q'+Date.now();job.status='queued';S.queue.push(job);save();renderAll();log('Added to queue: '+job.title);showView('queue')}
@@ -347,11 +385,11 @@ function recordHistory(platform,result,url){S.history.push({when:new Date().toLo
 function exportCSV(){const rows=[['SL NO','Title','Caption','Tags','Drive Link','Published','YouTube Link']];S.history.forEach((h,i)=>rows.push([i+1,h.title,'','', '',h.platform+' — '+h.result+' ('+h.when+')',h.url||'']));download('publisher-history.csv',rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv');log('CSV exported — columns match your “youtube videos” tracker sheet.')}
 
 /* ---------- GOOGLE SHEETS TRACKER ---------- */
-function sheetIdFrom(v){if(!v)return DEFAULT_SHEET;const m=String(v).match(/\/d\/([-\w]{20,})/);if(m)return m[1];const m2=String(v).match(/^([-\w]{20,})$/);return m2?m2[1]:String(v).trim()}
+function sheetIdFrom(v){if(!v)return '';const m=String(v).match(/\/d\/([-\w]{20,})/);if(m)return m[1];const m2=String(v).match(/^([-\w]{20,})$/);return m2?m2[1]:String(v).trim()}
 function normTitle(s){return String(s||'').toLowerCase().replace(/\.[a-z0-9]+$/,'').replace(/[^a-z0-9]+/g,' ').trim()}
 function sheetRange(a1){const tab=(S.settings.sheetTab||'').trim();return (tab?("'"+tab.replace(/'/g,"''")+"'!"):'')+a1}
 async function sheetsFetch(path,opts){const r=await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+sheetIdFrom(S.settings.sheet)+path,Object.assign({headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'}},opts||{}));const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error((d.error&&d.error.message)||('Sheets API '+r.status));return d}
-async function loadSheetRows(silent){if(!driveToken){if(!silent)alert('Connect Drive first — the tracker sheet is read with your Drive sign-in (it now also asks for Sheets permission).');return null}
+async function loadSheetRows(silent){if(!sheetIdFrom(S.settings.sheet)){if(!silent)alert('No tracker sheet set — add your own sheet link in Settings, or skip sheet validation.');return null}if(!driveToken){if(!silent)alert('Connect Drive first — the tracker sheet is read with your Drive sign-in (it now also asks for Sheets permission).');return null}
  try{const d=await sheetsFetch('/values/'+encodeURIComponent(sheetRange('A1:G1000')));const vals=d.values||[];S.sheetRows=vals.map((r,i)=>({row:i+1,sl:r[0]||'',title:r[1]||'',caption:r[2]||'',tags:r[3]||'',driveLink:r[4]||'',published:r[5]||'',ytLink:r[6]||''})).filter(x=>x.row>1&&(x.title||x.driveLink));save();renderVideos();log('Sheet validated: '+S.sheetRows.length+' row(s) in tracker, '+S.sheetRows.filter(x=>String(x.published).trim().toUpperCase()==='YES').length+' marked Published YES.');return S.sheetRows}
  catch(e){log('Sheet validation failed: '+e.message);if(!silent)alert('Could not read the tracker sheet:\n'+e.message+'\n\nCheck: 1) Google Sheets API is enabled in the Drive Google Cloud project, 2) you Reconnected Drive after the v6 update (new Sheets permission), 3) the sheet belongs to / is shared with the account you signed in with.');return null}}
 function sheetStatusFor(v){const rows=S.sheetRows||[];if(!rows.length)return null;const nt=normTitle(v.title||v.name);const row=rows.find(r=>normTitle(r.title)===nt)||rows.find(r=>r.driveLink&&v.link&&r.driveLink===v.link);if(!row)return{state:'missing',label:'Sheet: not added'};if(String(row.published).trim().toUpperCase()==='YES')return{state:'yes',label:'Sheet: Published YES',row};return{state:'added',label:'Sheet: added, not published',row}}
@@ -367,7 +405,8 @@ async function markSheetPublished(job,url){if(!driveToken||!sheetIdFrom(S.settin
 /* ---------- PUBLISHING ---------- */
 async function downloadDriveBlob(id){const r=await fetch('https://www.googleapis.com/drive/v3/files/'+id+'?alt=media',{headers:{Authorization:'Bearer '+driveToken}});if(!r.ok)throw new Error('Drive download failed '+r.status);return await r.blob()}
 async function uploadYouTube(job,blob){
- const meta={snippet:{title:job.title||job.video.name,description:job.caption,tags:job.tags,categoryId:'27'},status:{privacyStatus:job.privacy,selfDeclaredMadeForKids:job.madeForKids}};
+ const st={privacyStatus:job.publishAt?'private':job.privacy,selfDeclaredMadeForKids:job.madeForKids};if(job.publishAt)st.publishAt=job.publishAt;
+ const meta={snippet:{title:job.title||job.video.name,description:job.caption,tags:job.tags,categoryId:'27'},status:st};
  const init=await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status',{method:'POST',headers:{Authorization:'Bearer '+ytToken,'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':blob.type||'video/mp4','X-Upload-Content-Length':blob.size},body:JSON.stringify(meta)});
  if(!init.ok)throw new Error('YouTube init failed: '+(await init.text()).slice(0,300));
  const url=init.headers.get('Location');if(!url)throw new Error('YouTube did not return an upload URL');
@@ -376,7 +415,7 @@ async function uploadYouTube(job,blob){
  return 'https://youtube.com/shorts/'+data.id;
 }
 async function uploadFacebook(job){
- const token=S.settings.metaToken,page=S.settings.fbPage;if(!token||!page)throw new Error('Meta Page ID + token missing in Settings');
+ const token=await vaultMetaToken(),page=S.settings.fbPage;if(!page)throw new Error('Meta Page ID missing in Settings');if(!token)throw new Error('Meta Page token not saved - add it via Save to my vault in Settings');
  const pub=job.video.publicUrl;if(!pub)throw new Error('Facebook needs a real Drive video (demo items cannot post)');
  const start=await (await fetch('https://graph.facebook.com/v19.0/'+page+'/video_reels?upload_phase=start&access_token='+encodeURIComponent(token),{method:'POST'})).json();
  if(!start.video_id)throw new Error('FB start failed: '+JSON.stringify(start).slice(0,250));
@@ -384,7 +423,7 @@ async function uploadFacebook(job){
  throw new Error('FB session started (video_id '+start.video_id+'). Binary rupload is often CORS-blocked from GitHub Pages — finish this one via Muse Bridge webhook, which is pre-filled with this job.');
 }
 async function uploadInstagram(job){
- const token=S.settings.metaToken,ig=S.settings.igId;if(!token||!ig)throw new Error('Instagram Business ID + token missing in Settings');
+ const token=await vaultMetaToken(),ig=S.settings.igId;if(!ig)throw new Error('Instagram Business ID missing in Settings');if(!token)throw new Error('Meta Page token not saved - add it via Save to my vault in Settings');
  if(!job.video.publicUrl)throw new Error('Instagram needs a real Drive video (demo items cannot post)');
  const create=await (await fetch('https://graph.facebook.com/v19.0/'+ig+'/media',{method:'POST',body:new URLSearchParams({media_type:'REELS',video_url:job.video.publicUrl,caption:job.caption||job.title,access_token:token})})).json();
  if(!create.id)throw new Error('IG container failed: '+JSON.stringify(create).slice(0,250));
@@ -409,7 +448,7 @@ async function publishSelected(fromQueue=false){
  try{
   for(const p of job.platforms){
    try{
-    if(p==='youtube'){if(job.video.demo)throw new Error('Demo item — connect Google + load the real Drive file to upload');if(!ytToken)throw new Error('Connect YouTube first (top button, krishnaformanu account)');if(!blob)blob=await downloadDriveBlob(job.video.driveId);const url=await uploadYouTube(job,blob);recordHistory('YouTube','Published',url);await markSheetPublished(job,url);results.push('✅ YouTube: '+url)}
+    if(p==='youtube'){if(job.video.demo)throw new Error('Demo item — connect Google + load the real Drive file to upload');if(!ytToken)throw new Error('Connect YouTube first (top button)');if(!blob)blob=await downloadDriveBlob(job.video.driveId);const url=await uploadYouTube(job,blob);recordHistory('YouTube','Published',url);await markSheetPublished(job,url);results.push('✅ YouTube: '+url)}
     else if(p==='instagram'){const url=await uploadInstagram(job);recordHistory('Instagram','Published',url);results.push('✅ Instagram: '+url)}
     else if(p==='facebook'){await uploadFacebook(job);results.push('⚠️ Facebook: started, finish via bridge (see log)')}
     else{ // bridge platforms
@@ -430,6 +469,47 @@ function prepareMuseJob(){
 }
 function copyJob(){const t=window._lastJob||prepareMuseJob();navigator.clipboard.writeText(t).then(()=>alert('Muse Job copied. Paste it in your Muse chat / WhatsApp with Krishna.'))}
 
+/* ---------- BULK SCHEDULER (v11) ---------- */
+const SCHED_SLOTS_ET=['07:00','08:30','10:00','11:30','13:00','14:30','16:00','17:30','19:00','20:30'];
+function etDateStr(d){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
+function slotDateET(dateStr,slot){return new Date(dateStr+'T'+slot+':00-05:00')} // Nov–Mar = EST (UTC-5); this run is Nov 2026
+function buildSlots(count){const out=[];let day=etDateStr(new Date());let guard=0;while(out.length<count&&guard<60){for(const s of SCHED_SLOTS_ET){const dt=slotDateET(day,s);if(dt.getTime()>Date.now()+15*60000)out.push({iso:dt.toISOString(),label:day+' '+s+' ET'});if(out.length>=count)break}const next=new Date(day+'T12:00:00-05:00');next.setDate(next.getDate()+1);day=etDateStr(next);guard++}return out}
+function driveIdFromLink(link){const m=String(link||'').match(/\/d\/([-\w]{10,})/);return m?m[1]:null}
+async function scheduleAll(){
+ if(!window._schedArm){window._schedArm=true;const b=$('schedBtn');b.textContent='⚠️ Click again to confirm bulk schedule';log('Bulk schedule clicked. Click the button once more within 10 seconds to start uploading + scheduling all unpublished Shorts (10/day, US Eastern slots).');setTimeout(()=>{window._schedArm=false;b.textContent='📅 Schedule all unpublished (10/day)'},10000);return}
+ window._schedArm=false;$('schedBtn').textContent='📅 Schedule all unpublished (10/day)';window._schedStop=false;
+ if(!ytToken){log('Bulk schedule: YouTube not connected.');alert('Connect YouTube first.');return}
+ if(!driveToken){log('Bulk schedule: Drive not connected.');alert('Connect Drive first.');return}
+ if(!S.videos.length&&typeof loadDriveVideos==='function'){await loadDriveVideos()}
+ const rows=await loadSheetRows(true);if(!rows){log('Bulk schedule: could not read tracker sheet — aborted.');return}
+ const todo=rows.filter(r=>String(r.published).trim().toUpperCase()!=='YES').sort((a,b)=>(parseInt(a.sl)||0)-(parseInt(b.sl)||0));
+ if(!todo.length){log('Bulk schedule: nothing unpublished in the tracker.');$('schedStatus').textContent='All tracker rows are already Published YES.';return}
+ const slots=buildSlots(todo.length);let done=0;
+ log('Bulk schedule starting: '+todo.length+' unpublished Short(s), 10/day from '+slots[0].label+' to '+slots[slots.length-1].label+'.');
+ for(let i=0;i<todo.length;i++){
+  if(window._schedStop){log('Bulk schedule stopped by user after '+done+' video(s).');break}
+  const row=todo[i];const slot=slots[i];
+  const did=driveIdFromLink(row.driveLink);const vid=S.videos.find(v=>v.id===did)||S.videos.find(v=>normTitle(v.title||v.name)===normTitle(row.title));
+  if(!vid){log('Bulk schedule: SL '+row.sl+' — no matching Drive video found, skipped.');continue}
+  const job={title:row.title,caption:row.caption,tags:String(row.tags||'').split(',').map(x=>x.trim()).filter(Boolean),privacy:'private',publishAt:slot.iso,madeForKids:false,video:{driveId:vid.id,name:vid.name,driveLink:row.driveLink}};
+  try{
+   $('schedStatus').textContent='Scheduling SL '+row.sl+' ('+(i+1)+' of '+todo.length+') → releases '+slot.label+' …';
+   const blob=await downloadDriveBlob(vid.id);
+   const url=await uploadYouTube(job,blob);
+   $('fTitle').value=row.title;recordHistory('YouTube','Scheduled '+slot.label,url);
+   await markSheetPublished(job,url);
+   done++;log('📅 Scheduled SL '+row.sl+' “'+row.title+'” → releases '+slot.label+' → '+url);
+  }catch(e){
+   log('Bulk schedule STOPPED at SL '+row.sl+': '+e.message);
+   if(/quota/i.test(e.message))log('This is YouTube\u2019s daily API quota. Already-scheduled rows are marked YES and will be skipped — press the schedule button again after 13:30 IST (midnight Pacific) to continue.');
+   $('schedStatus').textContent='Stopped at SL '+row.sl+' after '+done+' scheduled. See log.';
+   renderAll();return;
+  }
+ }
+ $('schedStatus').textContent='Bulk schedule finished: '+done+' video(s) scheduled in this run.';
+ log('Bulk schedule finished: '+done+' video(s) scheduled in this run.');renderAll();
+}
+
 /* ---------- MUSE COMMAND PARSER ---------- */
 function chatMsg(who,text){const c=$('chat');const d=document.createElement('div');d.className='msg '+(who==='user'?'user':'muse');d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
 function parsePlatforms(txt){const all=[];if(/youtube|yt\b/.test(txt))all.push('youtube');if(/instagram|insta/.test(txt))all.push('instagram');if(/facebook|\bfb\b/.test(txt))all.push('facebook');if(/twitter|\bx\b/.test(txt))all.push('x');if(/tiktok/.test(txt))all.push('tiktok');if(/linkedin/.test(txt))all.push('linkedin');if(/\ball\b|every/.test(txt))return PLATFORMS.map(p=>p.id);return all.length?all:null}
@@ -437,7 +517,7 @@ function runCommand(raw){
  const input=raw||$('cmdInput').value;if(!input.trim())return;$('cmdInput').value='';chatMsg('user',input);
  let txt=input.toLowerCase().replace(/krishna!?\s*muse/g,'').replace(/hey krishna/g,'').trim();
  const reply=(m)=>chatMsg('muse',m);
- if(/deploy/.test(txt)){showView('settings');reply('Deploy mode: your phrase “krishna! muse deploy” is saved for Krishna in Muse chat. Here in the app, follow the 4 GitHub Pages steps on this page — your live URL will be https://manojstars.github.io/social-publisher/');return}
+ if(/deploy/.test(txt)){showView('settings');reply('Deploy mode: follow the 4 GitHub Pages steps on this page — your live URL will be https://YOUR-USERNAME.github.io/social-publisher/ (with your own GitHub username).');return}
  if(/refresh|load|list/.test(txt)&&/drive|video/.test(txt)){reply('Refreshing your Drive folder…');loadDriveVideos().then(()=>reply('Done — '+S.videos.length+' video(s) found. Say “publish latest to all” when ready.'));return}
  if(/export/.test(txt)){exportCSV();reply('History exported as CSV — columns match your YouTube tracker sheet (SL NO | Title | Link | Published).');return}
  if(/latest|newest/.test(txt)&&S.videos.length){selectVideoSilent(S.videos[0].id)}
@@ -464,33 +544,82 @@ function toggleVoice(){
 }
 
 
-/* ---------- GOOGLE VAULT (v8): authenticate once, works in every browser ---------- */
+/* ---------- CREDENTIALS VAULT (v11, Global Edition): per-user secrets, server-side ---------- */
 const VAULT_URL='https://uvbwhnkvbzjdilqmivsy.supabase.co/functions/v1/google-vault';
-function vaultConnect(service){
- if(!authUser){alert('Login to the Publisher first (top of the page) — the permanent Google connection is tied to your Publisher login.');return}
- location.href=VAULT_URL+'?action=start&service='+service+'&uid='+encodeURIComponent(authUser.id);
+const VAULT_PROVIDERS=[['google_drive','Google Drive'],['google_youtube','Google YouTube'],['meta','Meta (Facebook / Instagram)'],['x','X (Twitter)'],['tiktok','TikTok'],['linkedin','LinkedIn']];
+async function vaultJwt(){try{if(!supa)return '';const {data}=await supa.auth.getSession();return (data&&data.session&&data.session.access_token)||''}catch(e){return ''}}
+async function vaultCall(payload){
+ const jwt=await vaultJwt();if(!jwt)throw new Error('Login first — your vault is tied to your login.');
+ const r=await fetch(VAULT_URL,{method:'POST',headers:{Authorization:'Bearer '+jwt,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok)throw new Error(j.error||('Vault returned '+r.status));
+ return j;
+}
+function vaultStatusEl(provider){return $('vStatus_'+provider)}
+function setVaultStatus(provider,text){const el=vaultStatusEl(provider);if(el)el.textContent=text}
+async function saveVaultCred(provider){
+ try{
+  let body={action:'save_credentials',provider:provider,fields:{}};
+  if(provider==='google_drive'){body.client_id=$('sDriveClient').value.trim();body.client_secret=$('vDriveSecret').value.trim();if(!body.client_id&&!body.client_secret){alert('Paste your Drive Client ID and/or Client Secret first.');return}S.settings.driveClient=body.client_id||S.settings.driveClient||'';S.settings.googleClient=S.settings.driveClient||S.settings.youtubeClient||'';save()}
+  else if(provider==='google_youtube'){body.client_id=$('sYtClient').value.trim();body.client_secret=$('vYtSecret').value.trim();if(!body.client_id&&!body.client_secret){alert('Paste your YouTube Client ID and/or Client Secret first.');return}S.settings.youtubeClient=body.client_id||S.settings.youtubeClient||'';S.settings.googleClient=S.settings.youtubeClient||S.settings.driveClient||'';save()}
+  else if(provider==='meta'){const t=$('vMetaToken').value.trim();if(!t){alert('Paste your Meta Page Access Token first.');return}body.fields={access_token:t,fb_page_id:$('sFbPage').value.trim(),ig_business_id:$('sIgId').value.trim()};S.settings.fbPage=$('sFbPage').value.trim();S.settings.igId=$('sIgId').value.trim();save()}
+  else if(provider==='x'){body.fields={api_key:$('vXApiKey').value.trim(),api_secret:$('vXApiSecret').value.trim(),access_token:$('vXAccessToken').value.trim(),access_token_secret:$('vXAccessSecret').value.trim()};if(!Object.values(body.fields).some(Boolean)){alert('Fill in at least one X credential first.');return}}
+  else if(provider==='tiktok'){body.fields={client_key:$('vTikTokKey').value.trim(),client_secret:$('vTikTokSecret').value.trim()};body.client_id=body.fields.client_key;body.client_secret=body.fields.client_secret;if(!body.client_id&&!body.client_secret){alert('Fill in your TikTok Client Key and/or Client Secret first.');return}}
+  else if(provider==='linkedin'){body.client_id=$('vLinkedInId').value.trim();body.client_secret=$('vLinkedInSecret').value.trim();if(!body.client_id&&!body.client_secret){alert('Fill in your LinkedIn Client ID and/or Client Secret first.');return}}
+  setVaultStatus(provider,'Saving…');
+  await vaultCall(body);
+  ['vDriveSecret','vYtSecret','vMetaToken','vXApiKey','vXApiSecret','vXAccessToken','vXAccessSecret','vTikTokKey','vTikTokSecret','vLinkedInId','vLinkedInSecret'].forEach(id=>{const el=$(id);if(el)el.value=''});
+  setVaultStatus(provider,provider.indexOf('google')===0?'Secret saved ✓':'Saved ✓');
+  log('Vault: credentials saved for '+provider+' (write-only — never shown back).');
+  loadCredStatus();
+ }catch(e){setVaultStatus(provider,'Save failed');alert('Vault save failed: '+e.message)}
+}
+async function deleteVaultCred(provider){
+ if(!confirm('Delete your saved credentials for '+provider+' from your vault? This cannot be undone.'))return;
+ try{await vaultCall({action:'delete_credentials',provider:provider});setVaultStatus(provider,provider.indexOf('google')===0?'No secret saved yet':'Not saved');log('Vault: credentials deleted for '+provider+'.');loadCredStatus()}catch(e){alert('Vault delete failed: '+e.message)}
+}
+async function loadCredStatus(announce){
+ const panel=$('credStatusPanel');
+ if(!supa||!authUser){if(panel)panel.textContent='Login to see your credential status.';return}
+ try{
+  const j=await vaultCall({action:'credential_status'});
+  _credStatus=j.providers||{};
+  if(panel)panel.innerHTML=VAULT_PROVIDERS.map(([id,label])=>{const st=_credStatus[id];const saved=!!(st&&st.saved);return '<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0"><span>'+esc(label)+'</span><span class="badge '+(saved?'gold':'')+'">'+(saved?('Saved ✓'+(st.hint?' (…'+esc(st.hint)+')':'')):'Not saved')+'</span></div>'}).join('');
+  VAULT_PROVIDERS.forEach(([id])=>{const st=_credStatus[id];setVaultStatus(id,(st&&st.saved)?(id.indexOf('google')===0?'Secret saved ✓':'Saved ✓'):(id.indexOf('google')===0?'No secret saved yet':'Not saved'))});
+  renderReadiness();renderChecklist();
+  if(announce)log('Credential status refreshed from your vault.');
+ }catch(e){if(panel)panel.textContent='Could not load credential status: '+e.message}
+}
+async function vaultMetaToken(){
+ try{const j=await vaultCall({action:'get_secret',provider:'meta',field:'access_token'});return j.access_token||j.value||''}catch(e){log('Vault: could not fetch Meta token: '+e.message);return ''}
+}
+async function vaultConnect(service){
+ if(!authUser){alert('Login first — the permanent Google connection is tied to your Publisher login.');return}
+ const provider=service==='drive'?'google_drive':'google_youtube';
+ try{
+  log('Vault: asking for your '+service+' sign-in link (built from YOUR Client ID)…');
+  const j=await vaultCall({action:'google_auth_url',provider:provider});
+  if(j.auth_url){location.href=j.auth_url;return}
+  alert('Vault did not return a sign-in link. Save your Client ID + Secret to your vault first (Settings), then try again.');
+ }catch(e){alert('Could not start the permanent connection: '+e.message+'\n\nTip: save that provider\u2019s Client ID + Client Secret to your vault first (Settings → My Accounts & API Keys).')}
 }
 async function vaultFetch(){
  if(!supa||!authUser)return;
- try{
-  const {data}=await supa.auth.getSession();const jwt=data&&data.session?data.session.access_token:'';if(!jwt)return;
-  for(const svc of ['drive','youtube']){
-   try{
-    const r=await fetch(VAULT_URL+'?action=token&service='+svc,{method:'POST',headers:{Authorization:'Bearer '+jwt}});
-    const j=await r.json().catch(()=>({}));
-    if(j&&j.connected&&j.access_token){
-     const resp={access_token:j.access_token,expires_in:j.expires_in||3500};
-     if(svc==='drive'){driveToken=j.access_token;googleToken=driveToken;storeTok('drive',resp);$('driveBadge').textContent='Drive: connected ∞';$('driveBadge').className='pill ok';log('Drive connected permanently via Vault (no more sign-ins).')}
-     else{ytToken=j.access_token;storeTok('yt',resp);$('ytBadge').textContent='YouTube: connected ∞';$('ytBadge').className='pill ok';log('YouTube connected permanently via Vault (no more sign-ins).')}
-    } else if(j&&j.error){log('Vault ('+svc+'): '+j.error)}
-   }catch(e){}
-  }
-  if(driveToken)loadDriveVideos();
- }catch(e){}
+ for(const [svc,provider] of [['drive','google_drive'],['youtube','google_youtube']]){
+  try{
+   const j=await vaultCall({action:'google_token',provider:provider});
+   if(j&&j.connected&&j.access_token){
+    const resp={access_token:j.access_token,expires_in:j.expires_in||3500};
+    if(svc==='drive'){driveToken=j.access_token;googleToken=driveToken;storeTok('drive',resp);$('driveBadge').textContent='Drive: connected ∞';$('driveBadge').className='pill ok';log('Drive connected permanently via your Vault (no more sign-ins).')}
+    else{ytToken=j.access_token;storeTok('yt',resp);$('ytBadge').textContent='YouTube: connected ∞';$('ytBadge').className='pill ok';log('YouTube connected permanently via your Vault (no more sign-ins).')}
+   } else if(j&&j.error){log('Vault ('+svc+'): '+j.error)}
+  }catch(e){}
+ }
+ if(driveToken)loadDriveVideos();
 }
 function vaultReturnMsg(){try{const m=new URLSearchParams(location.search).get('vault');if(m){log('Google Vault: '+m);history.replaceState(null,'',location.pathname)}}catch(e){}}
 
-/* ---------- LOGIN (Supabase Auth, same project as CRM) + CLOUD SYNC ---------- */
+/* ---------- LOGIN (Supabase Auth) + CLOUD SYNC ---------- */
 const CLOUD_LS='manu_publisher_cloud_v2_separate';localStorage.removeItem('manu_publisher_cloud_v1');let supa=null,authUser=null,_applyingCloud=false,_cloudTimer=null;
 let _fileCfg=null;
 function setCloudBadge(m){const b=$('cloudBadge');if(b){b.textContent=m;b.className='pill '+(m.includes('synced')||m.includes('connected')?'ok':'')}}
@@ -502,31 +631,31 @@ function loginMsg(m){const e=$('loginMsg');if(e)e.textContent=m}
 async function initAuth(fromSave=false){
  if(!_fileCfg)await loadFileCfg();
  const cfg=cloudCfg();
- if(!cfg.url||!cfg.key){$('loginGate').classList.add('show');$('cloudSetupBox').style.display='block';$('loginFormBox').style.display='none';loginMsg('One-time bootstrap on this device: paste the Publisher URL + publishable key — or better, add cloud-config.json to the repo once (PUBLISHER_LOGIN_SETUP.md) and no device will ever ask this again.');return}
+ if(!cfg.url||!cfg.key){$('loginGate').classList.add('show');$('cloudSetupBox').style.display='block';$('loginFormBox').style.display='none';loginMsg('One-time bootstrap on this device: paste the platform URL + publishable key — or better, add cloud-config.json to the repo once (GLOBAL_SETUP.md) and no device will ever ask this again.');return}
  if(!window.supabase){loginMsg('Login library still loading — wait 3 seconds and refresh.');$('loginGate').classList.add('show');return}
  supa=window.supabase.createClient(cfg.url,cfg.key);
  const {data}=await supa.auth.getSession();
- if(data.session){await onLoggedIn(data.session.user)}else{$('loginGate').classList.add('show');$('cloudSetupBox').style.display='none';$('loginFormBox').style.display='block';if(fromSave)loginMsg('Connection saved. Login with your CRM email & password.')}
+ if(data.session){await onLoggedIn(data.session.user)}else{$('loginGate').classList.add('show');$('cloudSetupBox').style.display='none';$('loginFormBox').style.display='block';if(fromSave)loginMsg('Connection saved. Login with your email & password.')}
  supa.auth.onAuthStateChange(async(_ev,session)=>{if(session&&session.user)await onLoggedIn(session.user)});
 }
 async function onLoggedIn(user){
  authUser=user;setCloudBadge('Cloud: connected');vaultFetch();$('loginGate').classList.remove('show');const ub=$('userBadge');ub.style.display='inline-block';ub.textContent='👤 '+user.email;ub.className='pill ok';$('logoutBtn').style.display='inline-block';log('Logged in as '+user.email);
- await cloudLoad();
+ await cloudLoad();loadCredStatus();
 }
 async function doLogin(){if(!supa){await initAuth();if(!supa)return}loginMsg('Logging in…');const {error}=await supa.auth.signInWithPassword({email:$('lEmail').value.trim(),password:$('lPass').value});if(error)loginMsg('Login failed: '+error.message)}
 async function doSignup(){if(!supa){await initAuth();if(!supa)return}const {error}=await supa.auth.signUp({email:$('lEmail').value.trim(),password:$('lPass').value});loginMsg(error?('Sign up failed: '+error.message):'Sign up done — click the confirmation link in your email, then Login.')}
 async function doLogout(){if(supa)await supa.auth.signOut();authUser=null;location.reload()}
-function cloudPayload(){return JSON.parse(JSON.stringify(S))}
+function cloudPayload(){const c=JSON.parse(JSON.stringify(S));if(c&&c.settings)delete c.settings['meta'+'Token'];return c}
 function scheduleCloudSave(){if(!supa||!authUser||_applyingCloud)return;clearTimeout(_cloudTimer);_cloudTimer=setTimeout(cloudSave,1200)}
 async function cloudSave(){if(!supa||!authUser)return;try{await supa.from('publisher_state').upsert({user_id:authUser.id,state:cloudPayload(),updated_at:new Date().toISOString()});setCloudBadge('Cloud: synced');log('Everything synced to cloud (login-protected).')}catch(e){log('Cloud sync failed: '+(e.message||e))}}
 async function cloudLoad(){
  if(!supa||!authUser)return;
  try{const {data,error}=await supa.from('publisher_state').select('state').eq('user_id',authUser.id).maybeSingle();if(error)throw error;
-  if(data&&data.state&&Object.keys(data.state).length){_applyingCloud=true;S=Object.assign(S,data.state);localStorage.setItem(LS,JSON.stringify(S));_applyingCloud=false;initSettingsFields();renderAll();setCloudBadge('Cloud: synced');log('Cloud settings loaded — this device is fully synced.')}
+  if(data&&data.state&&Object.keys(data.state).length){_applyingCloud=true;S=Object.assign(S,data.state);if(S.settings)delete S.settings['meta'+'Token'];localStorage.setItem(LS,JSON.stringify(S));_applyingCloud=false;initSettingsFields();renderAll();setCloudBadge('Cloud: synced');log('Cloud settings loaded — this device is fully synced.')}
   else{await cloudSave();log('No cloud settings yet — this device\u2019s settings were saved to your cloud. Other devices will load them after login.')}
  }catch(e){log('Cloud load failed (run PUBLISHER_LOGIN_SETUP.md SQL once if the table is missing): '+(e.message||e))}
 }
-function initSettingsFields(){$('folderInput').value=S.settings.folder||DEFAULT_FOLDER;$('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolder').value=S.settings.folder||DEFAULT_FOLDER;$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sMetaToken').value=S.settings.metaToken||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'Resilience Resonance'}
+function initSettingsFields(){$('folderInput').value=S.settings.folder||'';$('sDriveClient').value=S.settings.driveClient||S.settings.googleClient||'';$('sYtClient').value=S.settings.youtubeClient||S.settings.googleClient||'';$('sFolder').value=S.settings.folder||'';$('sSheet').value=S.settings.sheet||'';$('sSheetTab').value=S.settings.sheetTab||'';$('sFbPage').value=S.settings.fbPage||'';$('sIgId').value=S.settings.igId||'';$('sWebhook').value=S.settings.webhook||'';$('sChannel').value=S.settings.channel||'';updateDashChannel()}
 
 window.addEventListener('DOMContentLoaded',init);
 </script>

@@ -5,6 +5,25 @@ Built for Manu / **Resilience Resonance** (@ResilienceResonance).
 
 Live URL after deploy: `https://manojstars.github.io/social-publisher/`
 
+## v11 — Global Edition (new)
+
+The Publisher is now a **public, multi-user app**. Any user can sign up
+with just an email + password and add **their own** API credentials —
+Google Drive, YouTube, Meta, X, TikTok, LinkedIn. Secrets are **write-only**:
+they go to a per-user server-side vault (`user_credentials` table, readable
+only by the `google-vault` Edge Function), tied to that user's login —
+never stored in the browser, never synced as settings, never shown back.
+There are **no owner defaults**: no pre-filled Drive folder, tracker sheet,
+or channel name; every user configures their own. All v10 publishing
+features (Drive listing, YouTube direct + scheduled bulk publishing, Meta
+FB/IG, Bridge webhook / Muse Job, queue/history, tracker CSV) are kept.
+
+- **Platform admin (one-time) + every-user guide:** see
+  [`GLOBAL_SETUP.md`](GLOBAL_SETUP.md) — enable public signups, run
+  `global-setup.sql`, redeploy the v2 vault function.
+- The sections below describe the original single-user (v10) setup and are
+  kept for reference.
+
 ## What it does
 - **Google Drive in:** Connect Google, list videos from your Drive folder
   (pre-filled: *Muse - AI - Automation*, ID `1rkK6gsGlz3c-1TcyY3O3ynrf8TnFRDJa`),
